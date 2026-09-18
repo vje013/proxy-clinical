@@ -7,6 +7,13 @@
 # reinstall with the CUDA 12.6 build of the same version:
 #   pip install --force-reinstall torch==2.14.0 --index-url https://download.pytorch.org/whl/cu126
 # The run manifest records torch.__version__ and the driver either way.
+#
+# torchvision / torchaudio: NOT installed, on purpose. Colab preinstalls builds
+# tied to its own torch; once torch is replaced they fail to load, and
+# transformers surfaces that as a misleading model-import error
+# ("operator torchvision::nms does not exist" -> "Could not import module
+# 'BloomPreTrainedModel'"). Nothing in this pipeline uses them. Remove them
+# before installing:  pip uninstall -y torchvision torchaudio
 torch==2.14.0
 transformers==5.17.0
 peft==0.21.0
