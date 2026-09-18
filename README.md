@@ -86,6 +86,9 @@ evaluates it with production decoding. Target hardware is a Colab A100
 (high-RAM); the repo is the source of truth and `notebooks/colab_launcher.ipynb`
 is a thin launcher that mounts Drive, clones the bundle, installs
 `requirements-colab.txt`, copies the pilot JSONL, and runs one command.
+`notebooks/colab_launcher_files.ipynb` does the same from a tarball uploaded to
+the Colab Files panel (no Drive); it zips and downloads the run folder at the end,
+since `/content` does not outlive the runtime.
 
 ```bash
 pip install -r requirements-colab.txt            # exact pins; the run manifest records what actually loaded
