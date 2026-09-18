@@ -1,0 +1,23 @@
+# Pinned environment for Block 2 on Colab. These are the exact versions the CPU
+# smoke run and the unit tests were proven against. Colab's preinstalled stack
+# drifts monthly; installing this file replaces it so a run is repeatable.
+#
+# torch: the PyPI wheel (CUDA 13.0 build). If torch.cuda.is_available() is
+# False after install on your runtime, the driver is older than CUDA 13 needs;
+# reinstall with the CUDA 12.6 build of the same version:
+#   pip install --force-reinstall torch==2.14.0 --index-url https://download.pytorch.org/whl/cu126
+# The run manifest records torch.__version__ and the driver either way.
+torch==2.14.0
+transformers==5.17.0
+peft==0.21.0
+trl==1.13.0
+datasets==5.0.1
+accelerate==1.15.0
+tokenizers==0.23.2
+safetensors==0.8.0
+huggingface_hub==1.32.0
+hf-xet==1.6.0
+numpy==2.4.4
+PyYAML==6.0.3
+Faker==40.39.0
+pytest==9.1.1

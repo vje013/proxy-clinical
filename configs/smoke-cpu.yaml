@@ -1,0 +1,51 @@
+# CPU smoke run with the tiny random stand-in model (scripts/make_tiny_model.py).
+# Proves every code path; produces no useful model.
+#   python scripts/make_tiny_model.py --corpus data/pilot/corpus.jsonl --out models/tiny-qwen2-smoke
+#   python -m lora.train --config configs/smoke-cpu.yaml
+name: smoke-cpu
+
+model:
+  name_or_path: models/tiny-qwen2-smoke   # local directory: no revision pin required
+  torch_dtype: float32
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+
+data:
+  train: data/pilot/train.jsonl
+  val: data/pilot/val.jsonl
+  corpus: data/pilot/corpus.jsonl
+  instruction_version: v1
+  limit_train: 48
+  limit_val: 12
+
+train:
+  output_dir: runs/smoke-cpu
+  seed: 1234
+  learning_rate: 5.0e-4
+  num_train_epochs: 1
+  max_steps: 6
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
+  gradient_accumulation_steps: 1
+  max_length: 12288                 # the tiny BPE tokenizer compresses worse than Qwen's
+  lr_scheduler_type: constant
+  warmup_steps: 0
+  logging_steps: 1
+  eval_strategy: steps
+  save_strategy: steps
+  save_steps: 3
+  save_total_limit: 2
+  gradient_checkpointing: false
+  bf16: false
+  fp16: false
+  use_cpu: true
+
+infer:
+  max_new_tokens: 48
+  batch_size: 4
+  dtype: float32
+  deterministic_algorithms: true

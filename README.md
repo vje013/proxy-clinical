@@ -76,3 +76,69 @@ present) or `sample_id`, so a bundle never straddles the split.
 ## Not in this block
 
 Model training, the surrogate engine, receipts, and the utility check.
+
+---
+
+# Block 2: LoRA tagger training, deterministic inference, evaluation
+
+`lora/` fine-tunes a 3B instruct model on the Block 1 training view and
+evaluates it with production decoding. Target hardware is a Colab A100
+(high-RAM); the repo is the source of truth and `notebooks/colab_launcher.ipynb`
+is a thin launcher that mounts Drive, clones the bundle, installs
+`requirements-colab.txt`, copies the pilot JSONL, and runs one command.
+
+```bash
+pip install -r requirements-colab.txt            # exact pins; the run manifest records what actually loaded
+bash scripts/run_pilot.sh configs/pilot.yaml runs/pilot-qwen2.5-3b
+```
+
+`run_pilot.sh` is train, then greedy inference on `val.jsonl`, then per-slice
+evaluation, then the two-run determinism test. Re-running with the same output
+directory resumes from the latest checkpoint (`--resume-if-exists`); pointing
+the output directory at Drive is how a Colab run survives a disconnect.
+Checkpoints are written every `save_steps` (100). Every run leaves one folder
+with `adapter/`, `run_manifest.json`, `config.yaml`, `predictions.jsonl`,
+`eval_report.md`, `eval.json`, `determinism.json`, and `pip_freeze.txt`.
+
+Configs: `configs/pilot.yaml` (Qwen2.5-3B-Instruct, pinned to commit
+`aa8e7253…`), `configs/pilot-llama.yaml` (Llama-3.2-3B-Instruct fallback,
+`0cb88a4f…`, gated: needs `HF_TOKEN`), `configs/smoke-cpu.yaml` (tiny random
+stand-in for CPU proofs). A Hub model without a 40-hex revision is a config
+error. LoRA is r=16, alpha=32, dropout 0.05 on q/k/v/o and gate/up/down, trained
+with TRL's SFT loop, completion-only loss, no packing.
+
+Data contract: every line of `train.jsonl`/`val.jsonl` must carry
+`instruction_version: v1` and the identical instruction text; a mismatch is a
+hard error at load, as is any sample longer than `train.max_length` (truncating
+a completion would teach the model to stop early). The user message the model
+sees is built in exactly one place (`lora.data.build_user_message`) for both
+training and inference.
+
+Inference is the production config: `do_sample=False`, `num_beams=1` (this is
+what temperature 0 means, exactly), fixed `max_new_tokens`, and the tokenizer
+copy saved beside the adapter. Batches are formed by a fixed sort so the same
+inputs always form the same batches.
+
+Evaluation reports span F1 (exact start, end, type) and entity-consistency
+accuracy per slice: single, multi, listing, bundle, hard_case, all, plus per
+type and per hard-case kind. A gold entity is consistent only when every one
+of its mention spans was predicted, all under one predicted id, and that id is
+used for no other gold entity. Output parsing is strict: anything that is not
+`{"mentions":[{"span":[s,e],"type":T,"id":E},…]}` with integer offsets inside
+the text is malformed, and a malformed sample counts every gold mention as
+missed. There is no repair path.
+
+The determinism test runs inference twice on the same checkpoint and inputs in
+the same process and environment and requires byte-identical raw output. That
+is the whole claim: same checkpoint, same input, same pinned environment. It is
+not a cross-hardware claim, and `determinism.json` records the GPU and library
+versions so it cannot be read as one.
+
+CPU proof: `bash scripts/smoke_cpu.sh` builds a 1M-parameter random Qwen2
+stand-in and runs the entire pipeline in about a minute. Its numbers are
+meaningless (a random model emits no JSON); its purpose is that every code path,
+including resume and the malformed-output branch, runs.
+
+Known pilot property: the hash split put no bundle pair in `val.jsonl` for the
+cafebabe seed, so the `bundle` slice is empty in the pilot eval. At 3k to 5k
+samples it will be populated.
