@@ -1,0 +1,20 @@
+# Fixed-width listing keyed by subject ID and initials, with study day.
+id: listing-fixed-02
+kind: listing
+style: fixed
+tags: [initials, fixed]
+titles:
+  - "Listing 16.2.7.4: Adverse Events by Study Day, Study {c:study}, {site:number}"
+  - "Listing 16.2.7.2: Treatment-Emergent Adverse Events, {site:name} ({site:number}), Study {c:study}"
+  - "Listing 16.2.7.7: Adverse Events Onset Relative to First Dose, Study {c:study}, {location:full}"
+rows_per_patient: [1, 1, 2]
+columns:
+  - {header: "Site", cell: "{site:bare_number}", width: 6}
+  - {header: "Subject", cell: "{row:patient:id}", width: 10}
+  - {header: "Initials", cell: "{row:patient:initials_dot}", width: 10}
+  - {header: "Age", cell: "{row:patient:age_num}", width: 5}
+  - {header: "Preferred Term", cell: "{row:ae}", width: 40}
+  - {header: "First Dose", cell: "{row:first_dose:dmy}", width: 13}
+  - {header: "Study Day", cell: "{row:start_day}", width: 11}
+  - {header: "Onset", cell: "{row:start:dmy}", width: 13}
+  - {header: "Outcome", cell: "{row:outcome}", width: 34}

@@ -1,0 +1,22 @@
+# Three patients: a pair plus a third subject introduced in the middle.
+id: narr-skel-13
+kind: narrative
+patients: 3
+tags: [multi, three]
+paragraphs:
+  - - {bank: intro_pair}
+    - {bank: pair_context, optional: 0.85}
+    - {bank: pair_dosing, forms: {patient1: any, patient2: any}, optional: 0.75}
+  - - {bank: p1_event, forms: {patient1: any}}
+    - {bank: p2_event, forms: {patient2: any}}
+    - {bank: pair_history, forms: {patient1: any, patient2: any}, optional: 0.85}
+  - - {bank: p3_event}
+    - {bank: p3_more, forms: {patient3: any}}
+    - {bank: pair_labs, forms: {patient1: any, patient2: any}, optional: 0.65}
+  - - {bank: p1_outcome, forms: {patient1: any}}
+    - {bank: p2_outcome, forms: {patient2: any}}
+    - {bank: p3_outcome, forms: {patient3: any}}
+  - - {bank: pair_causality, forms: {investigator: any}}
+    - {bank: p3_closing, forms: {patient3: any}}
+    - {bank: pair_followup, forms: {patient1: any, patient2: any}, optional: 0.65}
+    - {bank: pair_closing, forms: {patient1: any, patient2: any}}

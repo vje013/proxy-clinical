@@ -1,0 +1,25 @@
+# City|Province. Used for the en_CA share of casts.
+Toronto|Ontario
+Ottawa|Ontario
+Hamilton|Ontario
+London|Ontario
+Kingston|Ontario
+Windsor|Ontario
+Sudbury|Ontario
+Thunder Bay|Ontario
+Montreal|Quebec
+Quebec City|Quebec
+Sherbrooke|Quebec
+Halifax|Nova Scotia
+Moncton|New Brunswick
+Fredericton|New Brunswick
+Winnipeg|Manitoba
+Regina|Saskatchewan
+Saskatoon|Saskatchewan
+Calgary|Alberta
+Edmonton|Alberta
+Vancouver|British Columbia
+Victoria|British Columbia
+Kelowna|British Columbia
+St. John's|Newfoundland and Labrador
+Charlottetown|Prince Edward Island

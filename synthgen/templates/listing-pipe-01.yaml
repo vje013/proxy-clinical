@@ -1,0 +1,21 @@
+# Pipe-delimited AE listing with full patient names.
+id: listing-pipe-01
+kind: listing
+style: pipe
+tags: [names, pipe]
+titles:
+  - "Listing 16.2.7.1: Serious Adverse Events by Subject, Study {c:study}, {site:number} ({site:name})"
+  - "Listing 16.2.7.3: Adverse Events Leading to Discontinuation of Study Drug, Study {c:study}, {site:name}"
+  - "Listing 16.2.7.2: Treatment-Emergent Adverse Events, {site:number}, {location:full}, Study {c:study}"
+  - "Listing 16.2.7.4: Adverse Events of Special Interest, {site:name} ({location:city}), Study {c:study}"
+rows_per_patient: [1, 1, 2]
+columns:
+  - {header: "Subject ID", cell: "{row:patient:id}"}
+  - {header: "Patient", cell: "{row:patient:full}"}
+  - {header: "Age", cell: "{row:patient:age_num}"}
+  - {header: "Sex", cell: "{row:patient:sex_letter}"}
+  - {header: "Investigator", cell: "{row:investigator:last}"}
+  - {header: "Preferred Term", cell: "{row:ae}"}
+  - {header: "Onset", cell: "{row:start:dmy}"}
+  - {header: "Severity", cell: "{row:severity}"}
+  - {header: "Outcome", cell: "{row:outcome}"}

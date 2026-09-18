@@ -1,0 +1,108 @@
+# Small fixed vocab for unlabeled clinical filler. All values are distractors.
+indications:
+  - moderate-to-severe plaque psoriasis
+  - relapsing multiple sclerosis
+  - type 2 diabetes mellitus
+  - chronic obstructive pulmonary disease
+  - rheumatoid arthritis
+  - major depressive disorder
+  - metastatic colorectal cancer
+  - chronic heart failure with reduced ejection fraction
+  - atopic dermatitis
+  - non-valvular atrial fibrillation
+  - chronic kidney disease
+  - ulcerative colitis
+doses:
+  - 50 mg
+  - 100 mg
+  - 150 mg
+  - 200 mg
+  - 300 mg
+  - 400 mg
+  - 600 mg
+  - 2 mg/kg
+  - 5 mg/kg
+  - 10 mg/kg
+  - 0.5 mg
+  - 25 mg
+routes:
+  - orally
+  - subcutaneously
+  - by intravenous infusion
+  - intramuscularly
+frequencies:
+  - once daily
+  - twice daily
+  - every two weeks
+  - every four weeks
+  - weekly
+  - once every 3 weeks
+severities:
+  - mild
+  - moderate
+  - severe
+  - Grade 1
+  - Grade 2
+  - Grade 3
+outcomes:
+  - recovered/resolved
+  - recovered/resolved with sequelae
+  - recovering/resolving
+  - not recovered/not resolved
+  - recovered/resolved
+causality:
+  - not related
+  - unlikely related
+  - possibly related
+  - probably related
+  - related
+actions:
+  - study drug was interrupted
+  - study drug was permanently discontinued
+  - study drug was continued without dose modification
+  - the dose was reduced
+  - study drug was temporarily withheld
+histories:
+  - hypertension
+  - hyperlipidaemia
+  - type 2 diabetes mellitus
+  - osteoarthritis
+  - gastro-oesophageal reflux disease
+  - hypothyroidism
+  - asthma
+  - obesity
+  - chronic kidney disease stage 3
+  - benign prostatic hyperplasia
+  - migraine
+  - seasonal allergic rhinitis
+  - coronary artery disease
+  - depression
+  - osteoporosis
+conmeds:
+  - metformin
+  - lisinopril
+  - atorvastatin
+  - levothyroxine
+  - omeprazole
+  - amlodipine
+  - metoprolol
+  - paracetamol
+  - ibuprofen
+  - salbutamol
+  - sertraline
+  - furosemide
+  - apixaban
+  - insulin glargine
+  - prednisone
+  - ondansetron
+  - loperamide
+  - cetirizine
+  - amoxicillin
+  - ceftriaxone
+study_prefixes:
+  - RX
+  - PRC
+  - ZT
+  - KLB
+  - NV
+  - DRW

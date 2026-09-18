@@ -1,0 +1,21 @@
+# Two patients, interleaved paragraph by paragraph, with title and initials
+# forms pinned so both patients cycle through the same reference styles.
+id: narr-skel-10
+kind: narrative
+patients: 2
+tags: [multi, interleaved]
+paragraphs:
+  - - {bank: intro_pair}
+    - {bank: pair_context, optional: 0.85}
+  - - {bank: pair_dosing, forms: {patient1: any, patient2: any}, optional: 0.85}
+    - {bank: p1_event, forms: {patient1: title_last}}
+    - {bank: p2_event, forms: {patient2: title_last}}
+  - - {bank: p1_more, forms: {patient1: any}, optional: 0.9}
+    - {bank: p2_more, forms: {patient2: any}, optional: 0.9}
+    - {bank: pair_labs, forms: {patient1: any, patient2: any}, optional: 0.85}
+  - - {bank: pair_reporting, forms: {patient1: any, patient2: any}, optional: 0.85}
+    - {bank: p1_outcome, forms: {patient1: initials}}
+    - {bank: p2_outcome, forms: {patient2: initials}}
+  - - {bank: pair_causality, forms: {investigator: any}}
+    - {bank: pair_followup, forms: {patient1: any, patient2: any}, optional: 0.75}
+    - {bank: pair_closing, forms: {patient1: any, patient2: any}}

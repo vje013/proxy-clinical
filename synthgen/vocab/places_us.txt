@@ -1,0 +1,78 @@
+# City|State. Real place names are fine (they identify no one); used for SITE/LOCATION.
+Cleveland|Ohio
+Columbus|Ohio
+Cincinnati|Ohio
+Akron|Ohio
+Detroit|Michigan
+Ann Arbor|Michigan
+Grand Rapids|Michigan
+Lansing|Michigan
+Pittsburgh|Pennsylvania
+Philadelphia|Pennsylvania
+Harrisburg|Pennsylvania
+Chicago|Illinois
+Peoria|Illinois
+Indianapolis|Indiana
+Fort Wayne|Indiana
+Milwaukee|Wisconsin
+Madison|Wisconsin
+Minneapolis|Minnesota
+Rochester|Minnesota
+Saint Louis|Missouri
+Kansas City|Missouri
+Omaha|Nebraska
+Des Moines|Iowa
+Louisville|Kentucky
+Lexington|Kentucky
+Nashville|Tennessee
+Memphis|Tennessee
+Knoxville|Tennessee
+Atlanta|Georgia
+Savannah|Georgia
+Birmingham|Alabama
+Tampa|Florida
+Orlando|Florida
+Gainesville|Florida
+Miami|Florida
+Charlotte|North Carolina
+Durham|North Carolina
+Richmond|Virginia
+Norfolk|Virginia
+Baltimore|Maryland
+Buffalo|New York
+Albany|New York
+Syracuse|New York
+Hartford|Connecticut
+Providence|Rhode Island
+Boston|Massachusetts
+Worcester|Massachusetts
+Burlington|Vermont
+Portland|Maine
+Denver|Colorado
+Boulder|Colorado
+Salt Lake City|Utah
+Phoenix|Arizona
+Tucson|Arizona
+Albuquerque|New Mexico
+Dallas|Texas
+Houston|Texas
+San Antonio|Texas
+Oklahoma City|Oklahoma
+Tulsa|Oklahoma
+Little Rock|Arkansas
+New Orleans|Louisiana
+Seattle|Washington
+Spokane|Washington
+Portland|Oregon
+Sacramento|California
+Fresno|California
+San Diego|California
+Boise|Idaho
+Billings|Montana
+Fargo|North Dakota
+Sioux Falls|South Dakota
+Wichita|Kansas
+Charleston|South Carolina
+Columbia|South Carolina
+Anchorage|Alaska
+Honolulu|Hawaii

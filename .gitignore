@@ -1,0 +1,9 @@
+data/pilot/*.jsonl
+data/pilot/*.json
+data/**/run2/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+build/
+dist/

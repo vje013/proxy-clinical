@@ -1,0 +1,80 @@
+# MedDRA-style preferred-term-like adverse event terms. Distractors: never labeled.
+nausea
+vomiting
+diarrhoea
+constipation
+headache
+dizziness
+fatigue
+pyrexia
+rash
+pruritus
+urticaria
+arthralgia
+myalgia
+back pain
+upper respiratory tract infection
+nasopharyngitis
+urinary tract infection
+pneumonia
+cellulitis
+hypertension
+hypotension
+atrial fibrillation
+tachycardia
+palpitations
+syncope
+dyspnoea
+cough
+bronchitis
+anaemia
+neutropenia
+thrombocytopenia
+leukopenia
+alanine aminotransferase increased
+aspartate aminotransferase increased
+blood bilirubin increased
+blood creatinine increased
+hyperglycaemia
+hypoglycaemia
+hypokalaemia
+hyponatraemia
+hyperkalaemia
+dehydration
+decreased appetite
+weight decreased
+insomnia
+somnolence
+paraesthesia
+peripheral neuropathy
+tremor
+vision blurred
+tinnitus
+epistaxis
+haematuria
+oedema peripheral
+chest pain
+abdominal pain
+dyspepsia
+gastro-oesophageal reflux disease
+pancreatitis
+hepatic enzyme increased
+infusion related reaction
+injection site erythema
+injection site pain
+hypersensitivity
+angioedema
+deep vein thrombosis
+pulmonary embolism
+myocardial infarction
+transient ischaemic attack
+seizure
+renal impairment
+acute kidney injury
+hyperuricaemia
+gout
+alopecia
+dry mouth
+stomatitis
+mucosal inflammation
+febrile neutropenia

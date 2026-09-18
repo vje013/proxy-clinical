@@ -1,0 +1,27 @@
+# Investigator-forward narrative with a long tail of generic references and a
+# first-name-only mention in the final paragraph.
+id: narr-skel-03
+kind: narrative
+patients: 1
+tags: [single, investigator-forward]
+paragraphs:
+  - - {bank: intro_single}
+    - {bank: dosing, forms: {patient: generic_patient}}
+    - {bank: demographics_extra, forms: {patient: any}, optional: 0.75}
+  - - {bank: history, forms: {patient: any}}
+    - {bank: conmeds_detail, forms: {patient: any}, optional: 0.75}
+    - {bank: onset, forms: {patient: title_last}}
+    - {bank: event_detail, forms: {patient: any, investigator: full}, optional: 0.9}
+  - - {bank: severity_action, forms: {patient: generic_subject, investigator: full}}
+    - {bank: hospitalization, forms: {patient: any}, optional: 0.65}
+    - {bank: course, forms: {patient: any, investigator: last}}
+    - {bank: reporting, forms: {investigator: last}, optional: 0.85}
+  - - {bank: labs, forms: {patient: any}, optional: 0.85}
+    - {bank: exposure, forms: {patient: any}, optional: 0.65}
+    - {bank: outcome, forms: {patient: any}}
+    - {bank: causality, forms: {investigator: generic}}
+    - {bank: dechallenge, forms: {patient: any}, optional: 0.75}
+  - - {bank: followup, forms: {patient: first}}
+    - {bank: closing, forms: {patient: any}, optional: 0.75}
+    - {bank: sponsor_comment, optional: 0.65}
+    - {bank: contact, optional: 0.05}

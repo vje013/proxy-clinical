@@ -1,0 +1,21 @@
+# Two patients, described one after the other.
+id: narr-skel-09
+kind: narrative
+patients: 2
+tags: [multi, sequential]
+paragraphs:
+  - - {bank: intro_pair}
+    - {bank: pair_context, optional: 0.9}
+    - {bank: pair_dosing, forms: {patient1: any, patient2: any}, optional: 0.85}
+  - - {bank: pair_history, forms: {patient1: any, patient2: any}, optional: 0.9}
+    - {bank: p1_event, forms: {patient1: any}}
+    - {bank: p1_more, forms: {patient1: any}, optional: 0.9}
+  - - {bank: p2_event, forms: {patient2: any}}
+    - {bank: p2_more, forms: {patient2: any}, optional: 0.9}
+  - - {bank: pair_labs, forms: {patient1: any, patient2: any}, optional: 0.85}
+    - {bank: p1_outcome, forms: {patient1: any}}
+    - {bank: p2_outcome, forms: {patient2: any}}
+  - - {bank: pair_causality, forms: {investigator: any}}
+    - {bank: pair_reporting, optional: 0.75}
+    - {bank: pair_followup, forms: {patient1: any, patient2: any}, optional: 0.75}
+    - {bank: pair_closing, forms: {patient1: any, patient2: any}}

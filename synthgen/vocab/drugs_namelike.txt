@@ -1,0 +1,14 @@
+# Invented drug names that read like personal names. Hard-case injector 7 draws from here.
+# They are distractors: never labeled. Any Faker name colliding with one is resampled.
+Relatra
+Donavex
+Arvella
+Corvina
+Alendra
+Belmira
+Orlanda
+Selvane
+Daryon
+Merridel
+Lorvane
+Tessaline

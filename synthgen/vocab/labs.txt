@@ -1,0 +1,36 @@
+# Laboratory result phrases (analyte + value + unit). Distractors: never labeled.
+ALT 142 U/L
+AST 98 U/L
+total bilirubin 2.1 mg/dL
+alkaline phosphatase 310 U/L
+serum creatinine 1.9 mg/dL
+eGFR 41 mL/min/1.73 m2
+haemoglobin 9.8 g/dL
+platelet count 88 x 10^9/L
+absolute neutrophil count 0.9 x 10^9/L
+white blood cell count 2.7 x 10^9/L
+serum potassium 2.9 mmol/L
+serum sodium 128 mmol/L
+blood glucose 312 mg/dL
+HbA1c 8.4%
+troponin I 0.09 ng/mL
+CRP 46 mg/L
+ESR 58 mm/h
+INR 3.4
+aPTT 52 seconds
+lipase 410 U/L
+amylase 260 U/L
+TSH 7.8 mIU/L
+free T4 0.6 ng/dL
+LDH 480 U/L
+CK 1,150 U/L
+uric acid 9.6 mg/dL
+serum calcium 8.1 mg/dL
+serum magnesium 1.4 mg/dL
+albumin 2.9 g/dL
+BNP 620 pg/mL
+D-dimer 1.8 mg/L FEU
+ferritin 890 ng/mL
+urine protein 2+
+QTcF 478 ms
+haematocrit 29%

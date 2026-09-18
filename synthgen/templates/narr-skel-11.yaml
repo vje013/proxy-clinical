@@ -1,0 +1,22 @@
+# Second patient introduced late, after a full single-patient opening.
+id: narr-skel-11
+kind: narrative
+patients: 2
+tags: [multi, late-second]
+paragraphs:
+  - - {bank: intro_single}
+    - {bank: history, forms: {patient: any}}
+    - {bank: demographics_extra, forms: {patient: any}, optional: 0.65}
+  - - {bank: dosing, forms: {patient: any}}
+    - {bank: onset, forms: {patient: any}}
+    - {bank: severity_action, forms: {patient: any}}
+    - {bank: labs, forms: {patient: any}, optional: 0.65}
+  - - {bank: p2_intro_late}
+    - {bank: p2_more, forms: {patient2: any}, optional: 0.9}
+    - {bank: pair_labs, forms: {patient1: any, patient2: any}, optional: 0.75}
+  - - {bank: p1_outcome, forms: {patient1: any}}
+    - {bank: p2_outcome, forms: {patient2: any}}
+    - {bank: pair_reporting, forms: {patient1: any, patient2: any}, optional: 0.75}
+  - - {bank: pair_causality, forms: {investigator: any}}
+    - {bank: pair_followup, forms: {patient1: any, patient2: any}, optional: 0.75}
+    - {bank: pair_closing, forms: {patient1: any, patient2: any}}

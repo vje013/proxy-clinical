@@ -1,0 +1,26 @@
+# Medical-history-heavy narrative; the bare first name appears only at the end.
+id: narr-skel-04
+kind: narrative
+patients: 1
+tags: [single, history-heavy]
+paragraphs:
+  - - {bank: intro_single}
+    - {bank: demographics_extra, forms: {patient: generic_patient}}
+    - {bank: history, forms: {patient: any}}
+    - {bank: conmeds_detail, forms: {patient: any}, optional: 0.85}
+  - - {bank: study_context, optional: 0.85}
+    - {bank: dosing, forms: {patient: any}}
+    - {bank: exposure, forms: {patient: any}, optional: 0.75}
+  - - {bank: onset, forms: {patient: title_last}}
+    - {bank: event_detail, forms: {patient: generic_subject}}
+    - {bank: severity_action, forms: {patient: any}}
+    - {bank: reporting, optional: 0.85}
+  - - {bank: hospitalization, forms: {patient: any}, optional: 0.65}
+    - {bank: labs, forms: {patient: any}}
+    - {bank: course, forms: {patient: any}}
+  - - {bank: outcome, forms: {patient: first}}
+    - {bank: causality, forms: {investigator: full}}
+    - {bank: dechallenge, optional: 0.75}
+    - {bank: followup, forms: {patient: any}, optional: 0.9}
+    - {bank: closing, forms: {patient: any}, optional: 0.65}
+    - {bank: sponsor_comment, optional: 0.5}

@@ -1,0 +1,26 @@
+# Free-form: every patient slot is open, so the renderer cycles through unused
+# surface forms. The best host for nickname / misspelling injection.
+id: narr-skel-07
+kind: narrative
+patients: 1
+tags: [single, free-form]
+paragraphs:
+  - - {bank: intro_single}
+    - {bank: demographics_extra, forms: {patient: any}, optional: 0.85}
+    - {bank: study_context, optional: 0.65}
+  - - {bank: history, forms: {patient: any}}
+    - {bank: dosing, forms: {patient: any}}
+    - {bank: exposure, forms: {patient: any}, optional: 0.75}
+  - - {bank: onset, forms: {patient: any}}
+    - {bank: event_detail, forms: {patient: any}, optional: 0.9}
+    - {bank: severity_action, forms: {patient: any}}
+    - {bank: reporting, optional: 0.75}
+  - - {bank: labs, optional: 0.85}
+    - {bank: conmeds_detail, forms: {patient: any}, optional: 0.65}
+    - {bank: course, forms: {patient: any}}
+    - {bank: outcome, forms: {patient: any}}
+    - {bank: dechallenge, forms: {patient: any}, optional: 0.75}
+  - - {bank: causality, forms: {investigator: any}}
+    - {bank: followup, forms: {patient: any}}
+    - {bank: closing, forms: {patient: any}, optional: 0.75}
+    - {bank: sponsor_comment, optional: 0.65}

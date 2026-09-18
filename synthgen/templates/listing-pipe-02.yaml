@@ -1,0 +1,21 @@
+# Pipe-delimited listing with NO name column: the subject ID is the only
+# patient reference (hard case 6).
+id: listing-pipe-02
+kind: listing
+style: pipe
+tags: [id-only, pipe]
+titles:
+  - "Listing 16.2.7.5: Adverse Events by Subject and Preferred Term, Study {c:study}, {site:number}"
+  - "Listing 16.2.7.1: Serious Adverse Events, Study {c:study}, {site:name} ({location:full})"
+  - "Listing 16.2.7.6: Adverse Events with Action Taken, {site:number}, Study {c:study}"
+rows_per_patient: [1, 1, 2]
+columns:
+  - {header: "Subject", cell: "{row:patient:id}"}
+  - {header: "Age/Sex", cell: "{row:patient:age_num}/{row:patient:sex_letter}"}
+  - {header: "Site", cell: "{site:bare_number}"}
+  - {header: "Preferred Term", cell: "{row:ae}"}
+  - {header: "Onset Date", cell: "{row:start:iso}"}
+  - {header: "End Date", cell: "{row:end:iso}"}
+  - {header: "Severity", cell: "{row:severity}"}
+  - {header: "Serious", cell: "{row:serious}"}
+  - {header: "Causality", cell: "{row:causality}"}

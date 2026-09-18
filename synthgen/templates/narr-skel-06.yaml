@@ -1,0 +1,25 @@
+# Generic-heavy: nearly every reference after the intro is "the patient" or
+# "the subject"; a lone initials mention closes the document.
+id: narr-skel-06
+kind: narrative
+patients: 1
+tags: [single, generic-heavy]
+paragraphs:
+  - - {bank: intro_single}
+    - {bank: history, forms: {patient: generic_patient}}
+    - {bank: conmeds_detail, forms: {patient: generic_subject}, optional: 0.75}
+  - - {bank: dosing, forms: {patient: generic_subject}}
+    - {bank: exposure, forms: {patient: generic_patient}, optional: 0.75}
+    - {bank: onset, forms: {patient: generic_patient}}
+    - {bank: event_detail, forms: {patient: generic_subject}, optional: 0.9}
+  - - {bank: severity_action, forms: {patient: generic_patient}}
+    - {bank: hospitalization, forms: {patient: generic_subject}, optional: 0.65}
+    - {bank: labs, forms: {patient: generic_patient}, optional: 0.85}
+    - {bank: reporting, optional: 0.85}
+  - - {bank: course, forms: {patient: generic_subject}}
+    - {bank: outcome, forms: {patient: generic_patient}}
+    - {bank: causality, forms: {investigator: any}}
+    - {bank: dechallenge, forms: {patient: generic_subject}, optional: 0.65}
+  - - {bank: followup, forms: {patient: initials}}
+    - {bank: closing, forms: {patient: any}, optional: 0.75}
+    - {bank: sponsor_comment, optional: 0.65}

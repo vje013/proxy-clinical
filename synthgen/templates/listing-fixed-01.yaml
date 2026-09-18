@@ -1,0 +1,19 @@
+# Fixed-width listing with full names.
+id: listing-fixed-01
+kind: listing
+style: fixed
+tags: [names, fixed]
+titles:
+  - "Listing 16.2.7.2: Adverse Events by Subject, Study {c:study}, {site:number}"
+  - "Listing 16.2.7.1: Serious Adverse Events, {site:name}, {location:full}, Study {c:study}"
+  - "Listing 16.2.7.3: Adverse Events Leading to Withdrawal, Study {c:study} ({site:number}, {location:city})"
+rows_per_patient: [1, 2]
+columns:
+  - {header: "Subject ID", cell: "{row:patient:id}", width: 12}
+  - {header: "Name", cell: "{row:patient:full}", width: 24}
+  - {header: "Age", cell: "{row:patient:age_num}", width: 5}
+  - {header: "Sex", cell: "{row:patient:sex_letter}", width: 5}
+  - {header: "Preferred Term", cell: "{row:ae}", width: 40}
+  - {header: "Start Date", cell: "{row:start:dmy}", width: 13}
+  - {header: "Stop Date", cell: "{row:end:dmy}", width: 13}
+  - {header: "Action Taken", cell: "{row:action}", width: 44}

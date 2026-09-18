@@ -1,0 +1,20 @@
+# Pipe-delimited listing with screening numbers, names and investigator.
+id: listing-pipe-03
+kind: listing
+style: pipe
+tags: [names, screening, pipe]
+titles:
+  - "Listing 16.1.9.1: Subject Enrolment and Adverse Event Summary, Study {c:study}, {site:number}"
+  - "Listing 16.2.7.8: Adverse Events by Screening Number, {site:name}, Study {c:study}"
+  - "Listing 16.1.9.2: Screening Log with Adverse Events, {site:number} ({location:full}), Study {c:study}"
+rows_per_patient: [1]
+columns:
+  - {header: "Screening No.", cell: "{row:patient:screening}"}
+  - {header: "Subject ID", cell: "{row:patient:id}"}
+  - {header: "Patient", cell: "{row:patient:full}"}
+  - {header: "Age", cell: "{row:patient:age_num}"}
+  - {header: "Investigator", cell: "{row:investigator:full}"}
+  - {header: "Preferred Term", cell: "{row:ae}"}
+  - {header: "Onset", cell: "{row:start:us}"}
+  - {header: "Resolved", cell: "{row:end:us}"}
+  - {header: "Causality", cell: "{row:causality}"}

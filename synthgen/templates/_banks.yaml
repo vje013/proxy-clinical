@@ -1,0 +1,281 @@
+# Sentence banks. Skeletons compose these and set the surface form for each
+# slot's {patient:any} / {investigator:any} / {date:*:any} tokens.
+#
+# Rules:
+#   - Static text never contains "the patient", "the subject", "the investigator"
+#     or any other generic entity string; those only come from labelled tokens.
+#   - Past tense, CSR register, deliberately plain.
+#   - Distractors ({c:*}) are unlabeled clinical filler.
+banks:
+  intro_single:
+    - "{patient:subject} ({patient:full}) was {patient:an_age} {patient:sex_noun} with {c:indication} who was enrolled at {site:name} in {location:full} and randomized to receive {c:drug} {c:dose} {c:route} {c:freq}."
+    - "{patient:full} ({patient:subject}), {patient:an_age} {patient:sex_noun} with a history of {c:indication}, was screened at {site:name} ({location:full}) on {date:screening:any} and received the first dose of {c:drug} {c:dose} on {date:first_dose:any}."
+    - "This narrative concerns {patient:subject}, {patient:an_age} {patient:sex_noun} ({patient:full}) enrolled by {investigator:full} at {site:name}, {location:full}, in Study {c:study} for {c:indication}."
+    - "{patient:full}, {patient:subject}, was {patient:an_age} {patient:sex_word} enrolled at {site:number} ({site:name}, {location:full}) with {c:indication}. {patient:pron_subj|cap} was randomized to {c:drug} {c:dose} {c:freq} and received the first dose on {date:first_dose:any}."
+    - "{patient:subject} was {patient:an_age} {patient:sex_noun} ({patient:full}) with {c:indication} enrolled at {site:name} in {location:full} under {investigator:full}."
+    - "{patient:subject}, {patient:full}, {patient:an_age} {patient:sex_noun}, was enrolled in Study {c:study} at {site:name} ({site:number}), {location:full}, and was randomized to {c:drug} {c:dose} {c:route} {c:freq} for {c:indication}."
+
+  history:
+    - "{patient:any|cap} had a medical history of {c:history} and was receiving {c:conmeds} at baseline."
+    - "Relevant medical history for {patient:any} included {c:history}. Concomitant medications at the time of enrolment included {c:conmed} and {c:conmed2}."
+    - "Medical history included {c:history}. {patient:any|cap} had no known drug allergies and was taking {c:conmed} at screening."
+    - "At screening on {date:screening:any}, {patient:any} reported {c:history}; baseline concomitant medications were {c:conmeds}."
+    - "{patient:any|cap} had {c:history} at baseline, both considered stable, and was on {c:conmed} and {c:conmed2}."
+
+  dosing:
+    - "{patient:any|cap} received the first dose of {c:drug} {c:dose} {c:route} on {date:first_dose:any} ({date:first_dose:day})."
+    - "Study treatment with {c:drug} {c:dose} {c:freq} was initiated on {date:first_dose:any}. {patient:any|cap} tolerated the initial doses without incident."
+    - "The first administration of {c:drug} to {patient:any} took place on {date:first_dose:any}; dosing continued {c:freq} per protocol."
+    - "{patient:any|cap} was dosed with {c:drug} {c:dose} {c:route} {c:freq} starting {date:first_dose:any}, with no dose modifications prior to the event."
+
+  onset:
+    - "On {date:onset:any} ({date:onset:day}), {patient:any} developed {c:ae}, which was assessed as {c:severity} in intensity."
+    - "{patient:any|cap} reported {c:ae} on {date:onset:any}. The event was considered {c:severity} and was recorded as a treatment-emergent adverse event."
+    - "{c:ae|cap} of {c:severity} intensity was first reported by {patient:any} on {date:onset:any}. No similar event had been reported before the start of study treatment."
+    - "On {date:onset:any}, {patient:any} presented to {site:any} with {c:ae}. The event was graded as {c:severity}."
+    - "{patient:any|cap} experienced {c:ae} with onset on {date:onset:any}, {date:onset:day} of the study."
+    - "{c:ae|cap} was reported for {patient:any} with an onset date of {date:onset:any}; the event was {c:severity}."
+
+  severity_action:
+    - "The event was considered {c:severity}, and {c:action} on {date:action:any}."
+    - "In response to the event, {c:action} on {date:action:any}. {patient:any|cap} was managed with {c:conmed}."
+    - "Given the {c:severity} intensity of the event, {c:action} on {date:action:any}, and {patient:any} was monitored at {site:any}."
+    - "{c:action|cap} on {date:action:any}. No other action was taken with respect to {patient:any}."
+    - "{c:action|cap} on {date:action:any} at the discretion of {investigator:any}."
+
+  hospitalization:
+    - "{patient:any|cap} was hospitalised on {date:action:any} for observation and supportive care; the event was therefore considered serious."
+    - "The event required hospitalisation of {patient:any} from {date:action:any} to {date:resolution:any}."
+    - "{patient:any|cap} was admitted to {site:name} on {date:action:any} and discharged on {date:resolution:any}."
+    - "Because {patient:any} required inpatient admission on {date:action:any}, the event met the seriousness criterion of hospitalisation."
+
+  labs:
+    - "Laboratory results on {date:action:any} showed {c:labs2}. Other parameters were within normal limits."
+    - "Notable laboratory findings for {patient:any} included {c:lab} and {c:lab2}; {c:lab3} was also recorded."
+    - "Relevant laboratory values at the time of the event were {c:lab} and {c:lab2}."
+    - "Investigations for {patient:any} included {c:lab}, {c:lab2}, and {c:lab3}."
+    - "Blood samples drawn on {date:action:any} showed {c:lab}; a repeat sample on {date:resolution:any} was unremarkable."
+
+  course:
+    - "{patient:any|cap} was treated with {c:conmed2} and the event was followed at scheduled visits."
+    - "Over the subsequent days, {patient:any} was monitored closely; {c:ae_other} was also reported during this period and was considered unrelated."
+    - "The clinical course of {patient:any} was uncomplicated apart from transient {c:ae_other}."
+    - "{patient:any|cap} continued in the study under close observation, and no further dose adjustments were made."
+    - "During the event, {patient:any} was reviewed by {investigator:any} on {date:action:any}, and symptomatic treatment with {c:conmed2} was started."
+
+  outcome:
+    - "The event of {c:ae} resolved on {date:resolution:any}, and {patient:any} was reported as {c:outcome}."
+    - "{c:ae|cap} was reported as {c:outcome} on {date:resolution:any}. {patient:any|cap} completed the study."
+    - "The outcome for {patient:any} was recorded as {c:outcome}; the event ended on {date:resolution:any}."
+    - "By {date:resolution:any}, {patient:any} had recovered, and the outcome was documented as {c:outcome}."
+    - "At the visit on {date:resolution:any}, {c:ae} in {patient:any} was documented as {c:outcome}."
+    - "The event resolved without sequelae on {date:resolution:any}, and the outcome for {patient:any} was recorded as {c:outcome}."
+
+  causality:
+    - "{investigator:any|cap} assessed the event as {c:causality} to {c:drug}."
+    - "The event was considered {c:causality} to study drug by {investigator:any}."
+    - "In the opinion of {investigator:any}, the {c:ae} was {c:causality} to {c:drug}; {c:history1} was noted as a possible alternative explanation."
+    - "Causality was assessed by {investigator:any} as {c:causality}; the sponsor concurred."
+    - "{investigator:any|cap} considered the event {c:causality} to study treatment, citing the temporal relationship."
+
+  followup:
+    - "At the follow-up visit on {date:followup:any}, {patient:any} was asymptomatic."
+    - "{patient:any|cap} attended a follow-up visit on {date:followup:any}, at which no recurrence of {c:ae} was reported."
+    - "Follow-up of {patient:any} on {date:followup:any} was unremarkable."
+    - "No sequelae were reported for {patient:any} at the {date:followup:any} follow-up assessment."
+    - "{patient:any|cap} was seen again on {date:followup:any}; no recurrence was noted."
+
+  demographics_extra:
+    - "{patient:any|cap} weighed {c:weight} kg at baseline and was a {c:smoking}."
+    - "Baseline weight was {c:weight} kg. {patient:any|cap} was a {c:smoking} with no history of alcohol misuse."
+    - "At baseline, {patient:any} was a {c:smoking} weighing {c:weight} kg, with an ECOG performance status of {c:ecog}."
+    - "{patient:any|cap} had received no prior treatment for {c:indication} other than {c:conmed}, and baseline weight was {c:weight} kg."
+    - "Baseline characteristics for {patient:any} were unremarkable: weight {c:weight} kg, ECOG {c:ecog}, {c:smoking}."
+
+  study_context:
+    - "Study {c:study} was a randomized, double-blind, placebo-controlled study of {c:drug} in {c:indication}."
+    - "The study drug, {c:drug}, was administered {c:route} at {c:dose} {c:freq}; treatment assignment remained blinded at the time of this report."
+    - "{c:drug} {c:dose} was administered {c:route} {c:freq} according to the protocol for Study {c:study}."
+    - "This case was reported from {site:name} ({site:number}) in Study {c:study}, a study of {c:drug} in {c:indication}."
+    - "In Study {c:study}, {c:drug} was given {c:route} {c:freq} at a dose of {c:dose} to adults with {c:indication}."
+
+  event_detail:
+    - "The event was reported by {patient:any} at an unscheduled visit and was documented in the source notes by {investigator:any}."
+    - "{patient:any|cap} described the onset as gradual; no precipitating factors were identified."
+    - "The onset of the event was sudden, and {patient:any} contacted the site by telephone the same day."
+    - "No action was required for the event at the time of onset; {patient:any} continued on study drug pending review by {investigator:any}."
+    - "According to the site, {patient:any} had been compliant with study medication up to the onset of the event."
+    - "The event was first identified during a scheduled visit, at which {patient:any} also reported {c:ae_other}."
+
+  reporting:
+    - "The event was reported to the sponsor on {date:action:any}, and an expedited report was submitted where required."
+    - "The site reported the event to the sponsor within 24 hours of awareness on {date:action:any}."
+    - "The event was entered into the case report form on {date:action:any} and reviewed by the medical monitor."
+    - "Seriousness was assessed by {investigator:any} on {date:action:any}; the event was classified as {c:seriousness}."
+    - "The event was classified as {c:seriousness} and was reported to the sponsor on {date:action:any}."
+
+  dechallenge:
+    - "Dechallenge was positive: the event improved following interruption of {c:drug}. Rechallenge was not attempted."
+    - "The event did not recur when {c:drug} was resumed on {date:resolution:any}."
+    - "No dechallenge information was available because study drug was continued at the same dose."
+    - "Following the change in dosing, {patient:any} reported improvement within several days."
+    - "{patient:any|cap} was rechallenged with {c:drug} on {date:resolution:any} without recurrence of the event."
+
+  conmeds_detail:
+    - "Concomitant medications at the time of the event included {c:conmed} and {c:conmed2}; no new medications had been started in the preceding two weeks."
+    - "{patient:any|cap} continued {c:conmed} throughout the event; {c:conmed2} was added for symptomatic relief."
+    - "Concomitant therapy consisted of {c:conmed} and {c:conmed2}, both of which had been taken for more than one year prior to enrolment."
+    - "No concomitant medications other than {c:conmed} were recorded for {patient:any} during the event."
+    - "Ongoing concomitant medications were {c:conmed} and {c:conmed2}; neither was modified as a result of the event."
+
+  exposure:
+    - "{patient:any|cap} had been on study drug for {c:exposure_days} days at the onset of the event."
+    - "Exposure to {c:drug} prior to the event was {c:exposure_days} days, with no missed doses recorded."
+    - "The event occurred after {c:exposure_days} days of treatment with {c:drug} {c:dose} {c:freq}."
+    - "At onset, cumulative exposure to {c:drug} for {patient:any} was {c:exposure_days} days."
+    - "The onset of the event was {c:exposure_days} days after the first dose of {c:drug}; compliance was documented as complete."
+
+  sponsor_comment:
+    - "Sponsor comment: the event of {c:ae} is listed in the reference safety information for {c:drug}, and the case was assessed as expected."
+    - "Sponsor comment: {c:ae} is not listed in the reference safety information for {c:drug}, and the case was reported as unexpected."
+    - "Sponsor comment: the available information does not alter the known safety profile of {c:drug}."
+    - "Sponsor comment: additional follow-up information was requested from {site:any} regarding {c:lab}."
+    - "Sponsor comment: the sponsor agreed with the causality assessment of {investigator:any}; no further action was required."
+
+  pair_dosing:
+    - "{patient1:any|cap} started {c:drug} on {date1:first_dose:any} and {patient2:any} on {date2:first_dose:any}; both received {c:dose} {c:route} {c:freq}."
+    - "First doses were administered on {date1:first_dose:any} ({patient1:named}) and {date2:first_dose:any} ({patient2:named})."
+    - "Both subjects were dosed {c:route} {c:freq}: {patient1:any} from {date1:first_dose:any} and {patient2:any} from {date2:first_dose:any}."
+    - "Treatment began on {date1:first_dose:any} for {patient1:any} and on {date2:first_dose:any} for {patient2:any}, with no dose modifications before the events."
+
+  pair_followup:
+    - "Follow-up visits were completed on {date1:followup:any} ({patient1:named}) and {date2:followup:any} ({patient2:named}) without further findings."
+    - "{patient1:any|cap} was seen in follow-up on {date1:followup:any} and {patient2:any} on {date2:followup:any}; neither reported recurrence."
+    - "At follow-up on {date1:followup:any} and {date2:followup:any} respectively, {patient1:any} and {patient2:any} were asymptomatic."
+    - "No sequelae were reported at the follow-up visits of {patient1:named} ({date1:followup:any}) or {patient2:named} ({date2:followup:any})."
+
+  ids_extra:
+    - "{patient:any|cap} was assigned {patient:screening} at the screening visit on {date:screening:any}; the medical record number at {site:name} was {patient:mrn}."
+    - "Source records for {patient:any} were filed under {patient:mrn} at {site:name}, and the screening log lists {patient:screening}."
+    - "{patient:screening} corresponds to {patient:any}; the hospital record ({patient:mrn}) was reconciled with the case report form by {investigator:any}."
+    - "At screening ({date:screening:any}), {patient:any} was logged as {patient:screening}; the site's medical record number was {patient:mrn}."
+
+  p2_intro_late:
+    - "A second subject at the same site, {patient2:full} ({patient2:subject}), {patient2:an_age} {patient2:sex_noun}, experienced {c2:ae} on {date2:onset:any}."
+    - "{patient2:subject} ({patient2:full}), {patient2:an_age} {patient2:sex_noun} also enrolled at {site:any}, reported {c2:ae} with onset on {date2:onset:any}; the event was {c2:severity}."
+    - "A related case was reported for {patient2:full}, {patient2:subject}, {patient2:an_age} {patient2:sex_noun} who developed {c2:ae} on {date2:onset:any} after starting {c:drug} on {date2:first_dose:any}."
+    - "In addition, {patient2:full} ({patient2:subject}; {patient2:an_age} {patient2:sex_noun}) developed {c2:ae} on {date2:onset:any}, and {c2:action} on {date2:action:any}."
+
+  contact:
+    - "Queries regarding this case may be directed to {investigator:full} at {site:name} ({investigator:phone})."
+    - "The site contact for this narrative is {investigator:full}, {investigator:email}."
+    - "Source documents were provided by {investigator:last} ({investigator:phone}) on request."
+
+  closing:
+    - "No other adverse events were reported for {patient:any} during the study."
+    - "{patient:any|cap} completed the study on treatment."
+    - "No further events were reported for {patient:any} through the end of the follow-up period."
+    - "The sponsor's assessment agreed with that of {investigator:any}; no changes to the benefit-risk profile of {c:drug} were made on the basis of this case."
+    - "{patient:any|cap} remained on study at the time of the data cut-off."
+
+  # ------------------------------------------------------------ multi-patient
+  intro_pair:
+    - "Two subjects at {site:name} in {location:full} experienced adverse events of interest: {patient1:subject} ({patient1:full}), {patient1:an_age} {patient1:sex_noun}, and {patient2:subject} ({patient2:full}), {patient2:an_age} {patient2:sex_noun}."
+    - "This narrative describes {patient1:full} ({patient1:subject}) and {patient2:full} ({patient2:subject}), both enrolled at {site:name}, {location:full}, by {investigator:full} in Study {c:study}."
+    - "{patient1:subject} ({patient1:full}, {patient1:an_age} {patient1:sex_noun}) and {patient2:subject} ({patient2:full}, {patient2:an_age} {patient2:sex_noun}) were enrolled at {site:number} ({location:full}) with {c:indication}."
+    - "Both {patient1:full} ({patient1:subject}) and {patient2:full} ({patient2:subject}) received {c:drug} {c:dose} {c:freq} at {site:name} in {location:full}."
+    - "Two events of interest occurred at {site:name} ({site:number}, {location:full}) in Study {c:study}, involving {patient1:subject} ({patient1:full}) and {patient2:subject} ({patient2:full})."
+
+  p1_event:
+    - "{patient1:any|cap}, {patient1:an_age} {patient1:sex_noun}, received the first dose on {date1:first_dose:any} and developed {c1:ae} on {date1:onset:any}; the event was {c1:severity}."
+    - "For {patient1:any}, {c1:ae} began on {date1:onset:any} ({date1:onset:day}). {c1:action|cap} on {date1:action:any}, and the event was managed with {c1:conmed2}."
+    - "{patient1:any|cap} reported {c1:ae} on {date1:onset:any}, assessed as {c1:severity}, with {c1:action} on {date1:action:any}."
+    - "In the case of {patient1:any}, the onset of {c1:ae} was {date1:onset:any}, and the event was {c1:severity} in intensity. {c1:action|cap} on {date1:action:any}; no other action was taken."
+    - "{patient1:any|cap} first received {c:drug} on {date1:first_dose:any}. {c1:ae|cap} was reported on {date1:onset:any} and graded {c1:severity}."
+
+  p2_event:
+    - "{patient2:any|cap}, {patient2:an_age} {patient2:sex_noun}, first received {c:drug} on {date2:first_dose:any} and reported {c2:ae} on {date2:onset:any}."
+    - "{patient2:ordinal_patient|cap}, {patient2:any}, developed {c2:ae} on {date2:onset:any}; the event was {c2:severity} and {c2:action} on {date2:action:any}."
+    - "{c2:ae|cap} was reported for {patient2:any} with onset {date2:onset:any} ({date2:onset:day}), graded {c2:severity}. {c2:action|cap} on {date2:action:any} and the event was treated symptomatically with {c2:conmed2}."
+    - "{patient2:any|cap} experienced {c2:ae} beginning {date2:onset:any}. {c2:action|cap} on {date2:action:any}."
+    - "The event in {patient2:any}, {patient2:an_age} {patient2:sex_noun}, had an onset of {date2:onset:any} and was considered {c2:severity}. Relevant history included {c2:history}, and {c2:action} on {date2:action:any}."
+
+  p1_outcome:
+    - "The event in {patient1:any} resolved on {date1:resolution:any} and was recorded as {c1:outcome}."
+    - "{patient1:any|cap} was reported as {c1:outcome} on {date1:resolution:any}, and attended follow-up on {date1:followup:any}."
+    - "For {patient1:any}, the outcome was {c1:outcome} ({date1:resolution:any}); the follow-up visit on {date1:followup:any} was unremarkable."
+    - "The event resolved for {patient1:any} on {date1:resolution:any}; the outcome was {c1:outcome}."
+
+  p2_outcome:
+    - "The event in {patient2:any} resolved on {date2:resolution:any}; the outcome was {c2:outcome}."
+    - "{patient2:any|cap} was {c2:outcome} as of {date2:resolution:any}, with follow-up on {date2:followup:any}."
+    - "For {patient2:any}, resolution was documented on {date2:resolution:any} and the outcome recorded as {c2:outcome}."
+    - "In {patient2:any}, the event was {c2:outcome} on {date2:resolution:any}, and no recurrence was reported at follow-up on {date2:followup:any}."
+
+  pair_causality:
+    - "{investigator:any|cap} assessed the event in {patient1:any} as {c1:causality} and the event in {patient2:any} as {c2:causality} to {c:drug}."
+    - "Both events were assessed by {investigator:any}: {c1:causality} for {patient1:any} and {c2:causality} for {patient2:any}."
+    - "In the opinion of {investigator:any}, the event in {patient1:any} was {c1:causality} to study drug, and the event in {patient2:any} was {c2:causality}."
+    - "Causality was judged {c1:causality} for {patient1:any} and {c2:causality} for {patient2:any} by {investigator:any}."
+
+  pair_history:
+    - "{patient1:any|cap} had a history of {c1:history}; {patient2:any} had {c2:history}. Neither subject had a prior history of {c:indication}-related hospitalisation."
+    - "Medical history was notable for {c1:history} in {patient1:any} and for {c2:history} in {patient2:any}."
+    - "Baseline conditions included {c1:history} ({patient1:named}) and {c2:history} ({patient2:named}). Concomitant medications were {c1:conmed} for {patient1:named} and {c2:conmed} for {patient2:named}."
+    - "{patient1:any|cap} was receiving {c1:conmeds} at baseline, and {patient2:any} was receiving {c2:conmeds}."
+
+  pair_labs:
+    - "Laboratory results for {patient1:named} showed {c1:lab}; for {patient2:named}, {c2:lab} was recorded."
+    - "Relevant laboratory findings were {c1:lab} and {c1:lab2} in {patient1:any}, and {c2:lab} in {patient2:any}."
+    - "For {patient1:any}, {c1:lab} was noted on {date1:action:any}; {patient2:any} had {c2:lab} on {date2:action:any}."
+
+  pair_closing:
+    - "Neither {patient1:any} nor {patient2:any} discontinued the study as a result of these events."
+    - "Both patients remained in the study; no further events were reported for {patient1:any} or {patient2:any}."
+    - "{patient1:any|cap} and {patient2:any} both completed the treatment period."
+    - "No additional events were reported for either {patient1:any} or {patient2:any} through {date1:followup:any}."
+
+  pair_context:
+    - "Study {c:study} evaluated {c:drug} {c:dose} {c:route} {c:freq} in adults with {c:indication}; both cases were reviewed by {investigator:any}."
+    - "Both subjects received {c:drug} at {c:dose} {c:freq} as part of Study {c:study} for {c:indication}."
+    - "The two cases were reported from {site:any} in Study {c:study}, a study of {c:drug} in {c:indication}."
+    - "In Study {c:study}, {c:drug} was administered {c:route} {c:freq}; the events below were reported by {investigator:any}."
+
+  pair_reporting:
+    - "Both events were reported to the sponsor within 24 hours of site awareness; the event in {patient1:any} was classified as {c1:seriousness} and the event in {patient2:any} as {c2:seriousness}."
+    - "Seriousness was assessed as {c1:seriousness} for {patient1:any} and {c2:seriousness} for {patient2:any}."
+    - "The events were classified as {c1:seriousness} ({patient1:named}) and {c2:seriousness} ({patient2:named}) and were reviewed by the medical monitor."
+    - "Expedited reports were submitted for {patient1:named} ({c1:seriousness}) and {patient2:named} ({c2:seriousness}) where required."
+
+  p1_more:
+    - "{patient1:any|cap} was treated with {c1:conmed2}; {c1:ae_other} was also noted and considered unrelated."
+    - "{patient1:any|cap} was seen at an unscheduled visit on {date1:action:any}; vital signs were within normal limits."
+    - "Laboratory findings for {patient1:any} included {c1:lab} and {c1:lab2}."
+    - "{patient1:any|cap} was reviewed by {investigator:any} on {date1:action:any}."
+
+  p2_more:
+    - "{patient2:any|cap} was treated with {c2:conmed2}; {c2:ae_other} was also noted and considered unrelated."
+    - "{patient2:any|cap} was seen at an unscheduled visit on {date2:action:any}; vital signs were within normal limits."
+    - "Laboratory findings for {patient2:any} included {c2:lab} and {c2:lab2}."
+    - "{patient2:any|cap} was reviewed by {investigator:any} on {date2:action:any}."
+
+  p3_event:
+    - "A third subject, {patient3:full} ({patient3:subject}), {patient3:an_age} {patient3:sex_noun}, developed {c3:ae} on {date3:onset:any}."
+    - "{patient3:subject} ({patient3:full}), also enrolled at {site:any}, reported {c3:ae} on {date3:onset:any}; the event was {c3:severity}."
+    - "In addition, {patient3:full} ({patient3:subject}, {patient3:an_age} {patient3:sex_noun}) experienced {c3:ae} beginning {date3:onset:any}."
+
+  p3_more:
+    - "{patient3:any|cap} had a history of {c3:history} and was receiving {c3:conmed}."
+    - "{c3:action|cap} for {patient3:any} on {date3:action:any}."
+    - "Laboratory findings for {patient3:any} included {c3:lab}."
+    - "{patient3:any|cap} was reviewed by {investigator:any} on {date3:action:any}."
+
+  p3_outcome:
+    - "The event in {patient3:any} was {c3:outcome} on {date3:resolution:any}; {investigator:any} assessed it as {c3:causality}."
+    - "{patient3:any|cap} recovered on {date3:resolution:any}. Causality was assessed as {c3:causality}."
+    - "For {patient3:any}, the outcome was {c3:outcome} ({date3:resolution:any}) and the event was considered {c3:causality} to {c:drug}."
+
+  p3_closing:
+    - "No further events were reported for {patient3:any}."
+    - "{patient3:any|cap} remained on study through {date3:followup:any}."
+    - "Follow-up of {patient3:any} on {date3:followup:any} was unremarkable."
