@@ -91,8 +91,9 @@ the Colab Files panel (no Drive); it zips and downloads the run folder at the en
 since `/content` does not outlive the runtime.
 
 ```bash
-pip uninstall -y torchvision torchaudio        # Colab builds tied to the old torch; not used here
+pip uninstall -y torchvision torchaudio torchao bitsandbytes   # Colab preinstalls; unused here and break once torch is replaced
 pip install -r requirements-colab.txt            # exact pins; the run manifest records what actually loaded
+bash scripts/preflight.sh                        # import probes + one-step CPU training on the tiny stand-in; fails fast
 bash scripts/run_pilot.sh configs/pilot.yaml runs/pilot-qwen2.5-3b
 ```
 

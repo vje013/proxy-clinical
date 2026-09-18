@@ -13,7 +13,10 @@
 # transformers surfaces that as a misleading model-import error
 # ("operator torchvision::nms does not exist" -> "Could not import module
 # 'BloomPreTrainedModel'"). Nothing in this pipeline uses them. Remove them
-# before installing:  pip uninstall -y torchvision torchaudio
+# before installing:  pip uninstall -y torchvision torchaudio torchao bitsandbytes
+# (torchao 0.10 preinstalled on Colab is rejected by peft's LoRA dispatcher probe;
+# bitsandbytes is only a hazard if present and broken). scripts/preflight.sh checks
+# all four and runs a one-step CPU training before anything is downloaded.
 torch==2.14.0
 transformers==5.17.0
 peft==0.21.0
