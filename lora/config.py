@@ -86,6 +86,7 @@ class TrainCfg:
     eval_strategy: str = "steps"        # eval on val every save_steps
     save_strategy: str = "steps"        # checkpoint every save_steps (Colab disconnect insurance)
     save_steps: int = 100
+    eval_steps: int | None = None        # defaults to save_steps
     save_total_limit: int | None = 3
     gradient_checkpointing: bool = True
     bf16: bool = True

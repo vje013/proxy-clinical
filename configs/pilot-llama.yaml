@@ -36,6 +36,7 @@ train:
   eval_strategy: steps
   save_strategy: steps
   save_steps: 100
+  eval_steps: 20                    # eval loss on val every 20 steps (pilot is ~84 steps)
   save_total_limit: 3
   gradient_checkpointing: true
   bf16: true
