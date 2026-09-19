@@ -1,0 +1,97 @@
+# Anonymisation policy ema-0070-v0
+#
+# This file is the policy. The code reads it; the receipts hash it. A change in
+# how any type is handled is a change to this file and therefore a new policy
+# id, never a code-only change. Defaults are statements: every default below
+# names the rule it follows.
+policy_id: ema-0070-v0
+policy_version: 0
+title: Clinical report anonymisation, pilot policy
+regulatory_basis:
+  - "EMA Policy 0070 (publication of clinical data for medicinal products for human use): anonymisation of clinical reports"
+  - "HIPAA Privacy Rule, 45 CFR 164.514(b)(2) Safe Harbor: ages over 89 aggregated into a single category"
+
+# Closed entity-type set. Must equal synthgen.types.ENTITY_TYPES; the loader
+# refuses the policy otherwise. A tagger output naming any other type is
+# malformed upstream and never reaches this policy.
+entity_types: [PATIENT, INVESTIGATOR, SITE, LOCATION, DATE, ID, AGE, CONTACT]
+
+# Surrogate consistency scope: the same real-world entity maps to the same
+# surrogate everywhere inside one document bundle (a narrative and the listing
+# it belongs to), and to an unrelated surrogate in any other bundle. This is a
+# customer-visible decision: per-bundle (this file), per-study and
+# per-submission consistency trade linkability for utility differently.
+surrogate_consistency:
+  scope: document_bundle
+  scope_id: "bundle_id when present, else sample_id"
+  derivation:
+    scope_key: "HMAC-SHA256(master_secret, scope_id)"
+    entity_seed: "HMAC-SHA256(scope_key, entity_id)"
+    date_shift_seed: "HMAC-SHA256(scope_key, 'date-shift')"
+  master_secret: "32 random bytes held by the data controller; never written to output or receipt; receipts carry sha256(master_secret)[:16] as key id"
+
+generic_references:
+  # "the patient", "the second subject", "the principal investigator" carry no
+  # identifying content and pass through unchanged. They stay labelled.
+  action: passthrough
+
+types:
+  PATIENT:
+    method: surrogate_name
+    preserve: [form, title, sex_of_first_name, locale]
+    spelling_variants: normalize_to_surrogate    # "Gray"/"Grey" both become the surrogate surname
+    nicknames: surrogate_nickname_or_first_name
+  INVESTIGATOR:
+    method: surrogate_name
+    preserve: [form, title, locale]
+    spelling_variants: normalize_to_surrogate
+  SITE:
+    method: surrogate_site
+    preserve: [institution_words, site_number_width]
+    coordinated_with: [LOCATION]                 # a site named after its city follows the city's surrogate
+  LOCATION:
+    method: surrogate_place
+    pool: real_places_same_country               # generator vocabulary; region follows city
+    preserve: [form, country]
+  DATE:
+    method: shift
+    shift:
+      unit: weeks                                # whole weeks: day of week is preserved
+      min_weeks: 4
+      max_weeks: 52
+      direction: backward                        # never into the future relative to the document
+    relative_expressions:
+      study_day: passthrough                     # "Day 14" is interval-relative and stays true
+      weekday: passthrough                       # "the following Wednesday" stays true under whole-week shifts
+      month_anchored_prose: rerender_month       # "nine days after the March visit": month follows the shifted anchor
+      unresolvable: drop_month_and_report      # anchor month cannot be resolved: keep the interval, remove the month word, report it
+    preserve: [format, intervals, day_of_week]
+  ID:
+    method: digit_substitution
+    preserve: [scheme_labels, letters, digit_run_length, site_number_link]
+  AGE:
+    method: safe_harbor_90
+    threshold: 90                                # 45 CFR 164.514(b)(2)(i)(C)
+    cap_label: "90+"
+    preserve: [form]
+    excluded_methods: [jitter]                   # perturbs analytic values for negligible privacy gain at report scale
+  CONTACT:
+    method: surrogate_contact
+    preserve: [form]                             # email keeps first.last@site<number>.example shape; phone keeps shape, digits substituted
+
+receipts:
+  signature_scheme: Ed25519
+  library: cryptography
+  shard: consistency_scope                       # one receipt per scope, plus one run receipt over all shard receipts
+  canonical_json: "sorted keys, no whitespace, UTF-8"
+  hash: sha256
+
+utility_invariants:
+  - every date-graph interval preserved exactly (zero tolerance)
+  - relative-date prose resolves to the same target after the shift
+  - AGE values under the threshold unchanged
+  - mention count, types, entity ids and reading order unchanged
+
+residual_scan:
+  action: fail_on_hit                            # no original identifying surface form survives, word-boundary, case-insensitive
+  exempt: [generic_references, passthrough_ages, relative_dates]
