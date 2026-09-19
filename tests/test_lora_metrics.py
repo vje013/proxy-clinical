@@ -234,3 +234,38 @@ def test_v2_oracle_scores_perfectly_and_unlocatable_is_fp(corpus):
     assert a2["unlocatable"] == 1 and a2["span"]["fp"] == 1 and a2["span"]["fn"] == 0
     assert a2["span"]["recall"] == 1.0 and a2["span"]["precision"] < 1.0
     assert a2["entity_consistency"]["accuracy"] == 1.0
+
+
+# ---------------------------------------------------------------- closed type set
+
+def test_closed_type_set_is_shared_by_generator_validator_and_parsers():
+    from synthgen.cast import INVESTIGATOR_FORM_TYPES, LOCATION_FORM_TYPES, PATIENT_FORM_TYPES, SITE_FORM_TYPES
+    from synthgen.emit import _FORMAT_ORDER
+    from synthgen.types import ENTITY_TYPES, ENTITY_TYPE_SET
+    from synthgen.validate import TYPE_COMPAT
+    produced = set()
+    for table in (PATIENT_FORM_TYPES, INVESTIGATOR_FORM_TYPES, SITE_FORM_TYPES, LOCATION_FORM_TYPES):
+        produced |= set(table.values())
+    produced |= {"DATE"}
+    assert produced == ENTITY_TYPE_SET
+    assert tuple(_FORMAT_ORDER) == ENTITY_TYPES
+    assert set(TYPE_COMPAT) <= ENTITY_TYPE_SET and all(v <= ENTITY_TYPE_SET for v in TYPE_COMPAT.values())
+
+
+@pytest.mark.parametrize("bad_type", ["DRUG", "patient", "PERSON", "Date", "AGE ", "CONTACTS"])
+def test_unknown_type_makes_whole_output_malformed(bad_type, corpus):
+    with pytest.raises(MalformedPrediction, match="unknown type"):
+        parse_prediction(json.dumps({"mentions": [{"span": [0, 5], "type": bad_type, "id": "E1"}]}), text_len=20)
+    with pytest.raises(MalformedPrediction, match="unknown type"):
+        parse_prediction_v2(json.dumps({"mentions": [{"text": "a", "n": 1, "type": bad_type, "id": "E1"}]}))
+    # End to end: a perfect output plus one DRUG mention scores as a malformed
+    # sample (every gold mention missed), not as one false positive.
+    s0 = list(corpus)[0]
+    out = json.loads(training_pair(corpus[s0], "v2")["output"])
+    out["mentions"].append({"text": "Zinprolin", "n": 1, "type": bad_type, "id": "E9"})
+    res = evaluate([{"sample_id": s0, "raw_output": json.dumps(out), "finished": True}], corpus, contract="v2")
+    a = res["slices"]["all"]
+    assert a["malformed"] == 1
+    assert a["span"]["tp"] == 0 and a["span"]["fn"] == len(corpus[s0]["mentions"])
+    assert a["entity_consistency"]["accuracy"] == 0.0
+    assert any("unknown type" in k for k in a["malformed_reasons"])

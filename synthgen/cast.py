@@ -19,6 +19,7 @@ from dataclasses import dataclass
 
 from faker import Faker
 
+from .types import ENTITY_TYPE_SET
 from .vocab import MONTHS, MONTHS_ABBR, Vocab, load_vocab, words_of
 
 # One Faker per locale, created once. ``seed_instance`` resets its RNG per
@@ -98,6 +99,14 @@ INVESTIGATOR_ANY_FORMS: tuple[str, ...] = ("full", "last", "generic")
 
 SITE_FORM_TYPES: dict[str, str] = {"name": "SITE", "number": "SITE", "city_site": "SITE"}
 LOCATION_FORM_TYPES: dict[str, str] = {"full": "LOCATION", "city": "LOCATION", "region": "LOCATION"}
+
+# Every type the generator can emit must be in the closed set. Checked at import
+# so a typo in a form table fails before any corpus is written.
+for _table in (PATIENT_FORM_TYPES, INVESTIGATOR_FORM_TYPES, SITE_FORM_TYPES, LOCATION_FORM_TYPES):
+    for _form, _type in _table.items():
+        if _type not in ENTITY_TYPE_SET:
+            raise ImportError(f"form {_form!r} maps to unknown entity type {_type!r}")
+del _table, _form, _type
 
 DATE_KEYS: tuple[str, ...] = ("screening", "first_dose", "onset", "action", "resolution", "followup")
 DATE_ANCHORS: dict[str, str | None] = {

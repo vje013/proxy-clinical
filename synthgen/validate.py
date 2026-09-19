@@ -23,6 +23,7 @@ from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 
 from .cast import NUMBER_WORDS
+from .types import ENTITY_TYPE_SET
 from .vocab import WEEKDAYS, load_vocab
 
 TYPE_COMPAT: dict[str, set[str]] = {
@@ -32,6 +33,10 @@ TYPE_COMPAT: dict[str, set[str]] = {
     "LOCATION": {"LOCATION"},
     "DATE": {"DATE"},
 }
+for _k, _v in TYPE_COMPAT.items():
+    if _k not in ENTITY_TYPE_SET or not _v <= ENTITY_TYPE_SET:
+        raise ImportError(f"TYPE_COMPAT names an unknown entity type: {_k} -> {_v}")
+del _k, _v
 
 _PROSE_RE = re.compile(
     r"^(?P<n>[a-z]+|\d+) (?P<unit>day|days|week|weeks) (?P<dir>after|before) the "
@@ -138,6 +143,8 @@ def gate_entities(records: list[dict]) -> GateResult:
             seen[k] = e["entity_id"]
         for m in r["mentions"]:
             eid = m["entity_id"]
+            if m["type"] not in ENTITY_TYPE_SET:
+                res.failures.append(f"{r['sample_id']}: mention {m['text']!r} has unknown type {m['type']!r}")
             if eid not in ents:
                 res.failures.append(f"{r['sample_id']}: mention {m['text']!r} -> unknown {eid}")
                 continue

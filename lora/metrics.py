@@ -5,6 +5,11 @@ Parsing is strict on purpose. A prediction is either a well-formed
 malformed, in which case every gold mention of that sample counts as missed
 and every predicted span counts as zero. No repair heuristics: a repaired
 number is a number that lies about production behaviour.
+
+The type set is closed (``synthgen.types.ENTITY_TYPES``). A mention carrying
+any other type makes the whole output malformed: the model has left the
+contract, and the pipeline downstream cannot act on a type it has no policy
+for, so nothing in that output is trusted.
 """
 from __future__ import annotations
 
@@ -13,6 +18,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 
 from synthgen.anchors import nth_occurrence
+from synthgen.types import ENTITY_TYPES, ENTITY_TYPE_SET
 
 Span = tuple[int, int, str]   # (start, end, type)
 CONTRACTS = ("v1", "v2")
@@ -48,6 +54,8 @@ def parse_prediction(raw: str, text_len: int | None = None) -> list[dict]:
             raise MalformedPrediction(f"mention {i}: span [{s},{e}] out of range")
         if not isinstance(m["type"], str) or not m["type"]:
             raise MalformedPrediction(f"mention {i}: type must be a non-empty string")
+        if m["type"] not in ENTITY_TYPE_SET:
+            raise MalformedPrediction(f"mention {i}: unknown type {m['type']!r} (closed set: {', '.join(ENTITY_TYPES)})")
         if not isinstance(m["id"], str) or not m["id"]:
             raise MalformedPrediction(f"mention {i}: id must be a non-empty string")
         out.append({"start": s, "end": e, "type": m["type"], "id": m["id"]})
@@ -79,6 +87,8 @@ def parse_prediction_v2(raw: str) -> list[dict]:
             raise MalformedPrediction(f"mention {i}: n must be a positive integer")
         if not isinstance(m["type"], str) or not m["type"]:
             raise MalformedPrediction(f"mention {i}: type must be a non-empty string")
+        if m["type"] not in ENTITY_TYPE_SET:
+            raise MalformedPrediction(f"mention {i}: unknown type {m['type']!r} (closed set: {', '.join(ENTITY_TYPES)})")
         if not isinstance(m["id"], str) or not m["id"]:
             raise MalformedPrediction(f"mention {i}: id must be a non-empty string")
         out.append({"text": m["text"], "n": n, "type": m["type"], "id": m["id"]})

@@ -5,6 +5,7 @@ import hashlib
 import json
 from typing import Iterable
 
+from .types import ENTITY_TYPES
 from .cast import Cast
 from .render import Rendered
 
@@ -36,7 +37,7 @@ DEFAULT_INSTRUCTION_VERSION = "v2"
 INSTRUCTION_VERSION = DEFAULT_INSTRUCTION_VERSION
 INSTRUCTION = INSTRUCTIONS[DEFAULT_INSTRUCTION_VERSION]
 
-_FORMAT_ORDER = ("PATIENT", "INVESTIGATOR", "SITE", "LOCATION", "DATE", "ID", "AGE", "CONTACT")
+_FORMAT_ORDER = ENTITY_TYPES   # the closed set, in its canonical order
 
 
 # --------------------------------------------------------------------------- entity ids

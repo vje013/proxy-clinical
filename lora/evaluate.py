@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -68,6 +69,22 @@ class SliceAgg:
         }
 
 
+_MENTION_PREFIX = re.compile(r"^mention \d+: ")
+
+
+def malformed_reason(exc: Exception) -> str:
+    """Bucket label for a MalformedPrediction: the message without the mention
+    index and without detail after the first ':' or ' ('. 'mention 12: unknown
+    type 'DRUG' (closed set: ...)' -> "unknown type 'DRUG'"."""
+    msg = _MENTION_PREFIX.sub("", str(exc))
+    cut = len(msg)
+    for sep in (":", " ("):
+        i = msg.find(sep)
+        if i != -1:
+            cut = min(cut, i)
+    return msg[:cut].strip() or "malformed"
+
+
 def evaluate(predictions: list[dict], corpus: dict[str, dict], contract: str = "v2") -> dict:
     if contract not in CONTRACTS:
         raise SystemExit(f"unknown contract {contract!r}; expected one of {CONTRACTS}")
@@ -87,7 +104,7 @@ def evaluate(predictions: list[dict], corpus: dict[str, dict], contract: str = "
         except MalformedPrediction as exc:
             pred = None
             unloc_list = []
-            reason = str(exc).split(":")[0]
+            reason = malformed_reason(exc)
         unloc = len(unloc_list)
         total, per_type = span_counts(gold, pred)
         for u in unloc_list:                      # hallucinated / miscounted anchors are false positives
