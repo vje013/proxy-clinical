@@ -5,11 +5,12 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "synthgen"
 version = "0.1.0"
-description = "Proxy Clinical: synthetic de-id corpus generator (Block 1) and LoRA tagger training/eval (Block 2)"
+description = "Proxy Clinical: synthetic de-id corpus generator (Block 1), LoRA tagger training/eval (Block 2), de-identification runtime with signed receipts (Block 3)"
 requires-python = ">=3.11"
 dependencies = [
     "Faker>=20",
     "PyYAML>=6",
+    "cryptography>=42",   # Block 3 receipts (Ed25519); exact pin in requirements.txt
 ]
 
 [project.optional-dependencies]
@@ -20,9 +21,10 @@ train = ["torch>=2.14", "transformers>=5.17", "peft>=0.21", "trl>=1.13", "datase
 
 [project.scripts]
 synthgen = "synthgen.cli:main"
+deid = "deid.cli:main"
 
 [tool.setuptools.packages.find]
-include = ["synthgen*", "lora*"]
+include = ["synthgen*", "lora*", "deid*"]
 
 [tool.setuptools.package-data]
 synthgen = ["vocab/*.txt", "vocab/*.tsv", "templates/*.yaml"]

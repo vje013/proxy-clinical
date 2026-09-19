@@ -1,0 +1,10 @@
+# Pinned CPU path: Block 1 (synthgen), Block 3 (deid) and the tests. Exact
+# versions proven in the session environment (Python 3.11). Block 2's GPU
+# stack is pinned separately in requirements-colab.txt.
+Faker==40.39.0
+PyYAML==6.0.3
+pytest==9.1.1
+# Block 3 receipts: Ed25519 via the audited library, never hand-rolled.
+cryptography==46.0.7
+cffi==2.0.0
+pycparser==3.0

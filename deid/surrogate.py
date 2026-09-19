@@ -67,7 +67,7 @@ _DAY_RE = re.compile(r"^Day (-?\d+)$")
 _FOLLOWING_RE = re.compile(r"^the following (Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)$")
 _PROSE_RE = re.compile(
     r"^(?P<n>[A-Za-z]+|\d+) (?P<unit>day|days|week|weeks) (?P<dir>after|before) the "
-    r"(?P<anchor>(?P<month>January|February|March|April|May|June|July|August|September|October|November|December) "
+    r"(?P<anchor>(?:(?P<month>January|February|March|April|May|June|July|August|September|October|November|December) )?"
     r"(?:visit|assessment)|first dose visit)$"
 )
 _NUMBER_WORDS = {

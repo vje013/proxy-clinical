@@ -1,4 +1,6 @@
-# Proxy Clinical: synthetic de-identification corpus generator (Block 1)
+# Proxy Clinical
+
+## Block 1: synthetic de-identification corpus generator
 
 `synthgen` produces clinical-trial text (CSR-style adverse-event narratives and
 patient listings) in which every identity is planted by the generator, so every
@@ -75,7 +77,7 @@ present) or `sample_id`, so a bundle never straddles the split.
 
 ## Not in this block
 
-Model training, the surrogate engine, receipts, and the utility check.
+Model training (Block 2), the surrogate engine, receipts and the utility check (Block 3).
 
 ---
 
@@ -112,8 +114,8 @@ stand-in for CPU proofs). A Hub model without a 40-hex revision is a config
 error. LoRA is r=16, alpha=32, dropout 0.05 on q/k/v/o and gate/up/down, trained
 with TRL's SFT loop, completion-only loss, no packing.
 
-Data contract: every line of `train.jsonl`/`val.jsonl` must carry
-`instruction_version: v1` and the identical instruction text; a mismatch is a
+Data contract: every line of `train.jsonl`/`val.jsonl` must carry the configured
+`instruction_version` (v2 by default) and the identical instruction text; a mismatch is a
 hard error at load, as is any sample longer than `train.max_length` (truncating
 a completion would teach the model to stop early). The user message the model
 sees is built in exactly one place (`lora.data.build_user_message`) for both
@@ -165,3 +167,76 @@ including resume and the malformed-output branch, runs.
 Known pilot property: the hash split put no bundle pair in `val.jsonl` for the
 cafebabe seed, so the `bundle` slice is empty in the pilot eval. At 3k to 5k
 samples it will be populated.
+
+---
+
+# Block 3: de-identification runtime (surrogates, receipts, utility check)
+
+`deid/` turns `(text, mentions)` into a de-identified document, signs what it
+did, and proves the document is still analysable. Gold labels and relocated
+model output are interchangeable inputs; the whole block runs on CPU and is
+tested against the 500 pilot gold labels without a model.
+
+```bash
+pip install -r requirements.txt                      # Faker, PyYAML, pytest, cryptography (pinned)
+python -m deid.cli keygen --out keys/                # Ed25519 signing key pair + 32-byte surrogate secret (never committed)
+python -m deid.cli run --corpus data/pilot/corpus.jsonl --keys keys/ --out runs/deid-pilot/
+python -m deid.cli run --corpus ... --predictions runs/<run>/predictions.jsonl --keys keys/ --out ...   # mentions from the model
+python -m deid.cli verify --run runs/deid-pilot/ --public-key keys/signing_key.pub                    # offline
+```
+
+**Policy** (`policies/ema-0070-v0.yaml`) is data the code executes; a change in
+how any type is handled is a new policy id. It states the closed type set (must
+equal `synthgen.types.ENTITY_TYPES`, the same tuple the generator, the validator
+and both strict parsers import), the surrogate consistency scope (`document_bundle`:
+the same entity maps to the same surrogate inside a bundle and to an unrelated one
+elsewhere), per-type methods, the date shift (whole weeks, backward, 4 to 52), and
+`age_handling: safe_harbor_90` (pass through under 90, `90+` at and above; jitter
+excluded). Receipts carry the policy id and the sha256 of the file bytes.
+
+**Surrogate engine** (`deid/surrogate.py`). Keys form one HMAC chain:
+`scope_key = HMAC(master_secret, bundle_id or sample_id)`,
+`entity_seed = HMAC(scope_key, entity_id)`, `shift_seed = HMAC(scope_key, "date-shift")`.
+Each entity's Faker is seeded from its entity seed, so no mapping table exists
+anywhere. Rendering is form-preserving: `Julian Gray`, `Julian`, `Mr. Gray`,
+`J. Gray`, `J.G.`, `Jules Gray` and `Mr. Grey` all re-render from one surrogate
+pair (with fresh initials); IDs keep their scheme and digit widths and carry the
+surrogate site number; a site named after its city follows the city's surrogate;
+places come from the real-place pool of the same country; generic references
+(`the patient`, `the second subject`) pass through. Dates shift by one offset per
+scope in whole weeks, so every interval and every weekday survives; `Day 14` is
+unchanged; `nine days after the March visit` has its month re-rendered to the
+shifted anchor's month, and when the anchor cannot be resolved from the text the
+month word is dropped (`nine days after the visit`) and reported, never left
+stale. A residual scan over the output fails the run if any original identifying
+string survives.
+
+**Receipts** (`deid/receipt.py`). One Ed25519 signature per shard (a shard is one
+consistency scope) over the canonical JSON of: policy id + hash, code versions and
+git commit, scope id and document ids, sha256 of the input and of the output
+`(text, mentions)`, mention counts by type, tagger provenance (gold, or adapter
+and predictions hashes under a contract), the surrogate secret's id and the
+signing key's id, and a timestamp. A run receipt signs the ordered list of shard
+receipt hashes plus the utility and residual verdicts. `verify` needs only the
+public key, the receipts, the output and the policy file, and re-derives every
+hash; it fails on an edited surrogate, a dropped document, a removed or reordered
+shard, a re-signed shard, a different policy file, or a recorded utility failure.
+Receipts contain counts and hashes, never document strings. Signatures come from
+the `cryptography` package; nothing cryptographic is implemented in this repo.
+
+**Utility check** (`deid/utility.py`). From the surrogated text alone it parses
+every absolute date, checks that all of them in a scope moved by one whole-week
+offset in the policy window, reconstructs every DATE entity's value, rebuilds the
+per-patient timeline (screening, first dose, onset, action, resolution,
+follow-up) and diffs every interval against the corpus date graph; every
+relative expression must still resolve to the right day against the reconstructed
+anchor; ages must be unchanged under the threshold; mention structure and all text
+outside mentions must be identical. Zero tolerance: there is no tolerance parameter.
+
+Pilot result (gold mentions, 500 documents, 480 shards): 8,855 intervals checked,
+0 mismatched; 6,560 absolute dates shifted; 459 relative expressions still true
+(446 study days, 2 weekdays, 11 anchored prose: 10 months re-rendered, 1 dropped);
+2,060 ages unchanged; 0 residual hits; all receipts verify. About 4 seconds.
+
+`runs/`, `keys/` are git-ignored. `engine_report.json` in a run folder lists the
+reported phrases and so contains original strings; it is controller-side only.
