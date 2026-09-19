@@ -27,4 +27,12 @@ python -m lora.determinism --config "$CFG" --adapter "$OUT/adapter" --input "$VA
 
 python -m pip freeze > "$OUT/pip_freeze.txt"
 echo "== done. artifacts in $OUT:"; ls -1 "$OUT"
-echo; sed -n '1,40p' "$OUT/eval_report.md"
+echo; cat "$OUT/eval_report.md"
+
+# Pack immediately: on Colab, /content vanishes with the runtime, so the zip must
+# exist before anyone has a chance to forget to download it. PACK_RUN=0 skips it
+# (e.g. when the run folder already lives on Drive).
+if [ "${PACK_RUN:-1}" != "0" ]; then
+  echo; echo "== pack (checkpoints excluded)"
+  python scripts/pack_run.py "$OUT" --quiet
+fi
