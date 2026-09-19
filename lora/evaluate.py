@@ -18,7 +18,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 from .metrics import (
-    ConsistencyResult, Counts, MalformedPrediction, entity_consistency, parse_prediction, span_counts,
+    CONTRACTS, ConsistencyResult, Counts, MalformedPrediction, entity_consistency, parse_and_locate, span_counts,
 )
 
 SLICE_ORDER = ("all", "single", "multi", "listing", "bundle", "hard_case")
@@ -45,6 +45,8 @@ class SliceAgg:
         self.samples = 0
         self.malformed = 0
         self.unfinished = 0
+        self.unlocatable = 0          # v2: predicted mentions whose text/occurrence is not in the document
+        self.predicted = 0
         self.spans = Counts()
         self.per_type: dict[str, Counts] = defaultdict(Counts)
         self.consistency = ConsistencyResult()
@@ -56,6 +58,9 @@ class SliceAgg:
             "malformed": self.malformed,
             "malformed_rate": round(self.malformed / self.samples, 4) if self.samples else 0.0,
             "unfinished": self.unfinished,
+            "predicted_mentions": self.predicted,
+            "unlocatable": self.unlocatable,
+            "unlocatable_rate": round(self.unlocatable / self.predicted, 4) if self.predicted else 0.0,
             "span": self.spans.as_dict(),
             "per_type": {t: c.as_dict() for t, c in sorted(self.per_type.items())},
             "entity_consistency": self.consistency.as_dict(),
@@ -63,7 +68,9 @@ class SliceAgg:
         }
 
 
-def evaluate(predictions: list[dict], corpus: dict[str, dict]) -> dict:
+def evaluate(predictions: list[dict], corpus: dict[str, dict], contract: str = "v2") -> dict:
+    if contract not in CONTRACTS:
+        raise SystemExit(f"unknown contract {contract!r}; expected one of {CONTRACTS}")
     aggs: dict[str, SliceAgg] = {k: SliceAgg() for k in SLICE_ORDER}
     hard_kind_cons: dict[str, ConsistencyResult] = defaultdict(ConsistencyResult)
     per_sample: list[dict] = []
@@ -75,12 +82,17 @@ def evaluate(predictions: list[dict], corpus: dict[str, dict]) -> dict:
         rec = corpus[p["sample_id"]]
         gold = rec["mentions"]
         try:
-            pred = parse_prediction(p["raw_output"], text_len=len(rec["text"]))
+            pred, unloc_list = parse_and_locate(p["raw_output"], rec["text"], contract)
             reason = None
         except MalformedPrediction as exc:
             pred = None
+            unloc_list = []
             reason = str(exc).split(":")[0]
+        unloc = len(unloc_list)
         total, per_type = span_counts(gold, pred)
+        for u in unloc_list:                      # hallucinated / miscounted anchors are false positives
+            total.fp += 1
+            per_type.setdefault(u["type"], Counts()).fp += 1
         cons = entity_consistency(gold, pred)
         for s in slices_of(rec):
             a = aggs[s]
@@ -90,6 +102,8 @@ def evaluate(predictions: list[dict], corpus: dict[str, dict]) -> dict:
                 a.malformed_reasons[reason or "malformed"] += 1
             if not p.get("finished", True):
                 a.unfinished += 1
+            a.unlocatable += unloc
+            a.predicted += (len(pred) if pred is not None else 0) + unloc
             a.spans.add(total)
             for t, c in per_type.items():
                 a.per_type[t].add(c)
@@ -103,6 +117,7 @@ def evaluate(predictions: list[dict], corpus: dict[str, dict]) -> dict:
         })
 
     return {
+        "contract": contract,
         "slices": {k: aggs[k].as_dict() for k in SLICE_ORDER if aggs[k].samples},
         "hard_case_kinds": {k: v.as_dict() for k, v in sorted(hard_kind_cons.items())},
         "per_sample": per_sample,
@@ -116,10 +131,16 @@ def render_report(result: dict, meta: dict) -> str:
     L.append(f"Adapter `{meta.get('adapter_dir')}` (sha256 `{str(meta.get('adapter_sha256'))[:16]}...`), "
              f"predictions `{meta.get('predictions')}`, corpus `{meta.get('corpus')}`.")
     env = meta.get("environment") or {}
+    L.append(f"Output contract: {result.get('contract')}. ")
     L.append(f"Decoding: greedy, max_new_tokens {meta.get('max_new_tokens')}, batch {meta.get('batch_size')}; "
              f"GPU {env.get('gpu')}; torch {env.get('torch')}, transformers {env.get('transformers')}, "
              f"peft {env.get('peft')}, trl {env.get('trl')}.")
     L.append("")
+    if result.get("contract") == "v2":
+        L.append("v2 predictions are text anchors (exact string + occurrence index) relocated to offsets "
+                 "deterministically before scoring; a mention whose string/occurrence is not in the document is "
+                 "'unlocatable' and scores as a miss. No repair is applied.")
+        L.append("")
     L.append("Span F1 is exact-match on (start, end, type). Entity consistency counts a gold entity as consistent "
              "only when every one of its mention spans was predicted, all under a single predicted id, and that id "
              "is not used for any other gold entity's mentions. A malformed output counts every gold mention of "
@@ -127,11 +148,12 @@ def render_report(result: dict, meta: dict) -> str:
     L.append("")
     L.append("## Per slice")
     L.append("")
-    L.append("| slice | samples | malformed | unfinished | span P | span R | span F1 | entity acc | consistent | split | merged | incomplete |")
-    L.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
+    L.append("| slice | samples | malformed | unfinished | unlocatable | span P | span R | span F1 | entity acc | consistent | split | merged | incomplete |")
+    L.append("|---|---|---|---|---|---|---|---|---|---|---|---|---|")
     for k, s in result["slices"].items():
         sp, ec = s["span"], s["entity_consistency"]
         L.append(f"| {k} | {s['samples']} | {s['malformed']} ({100 * s['malformed_rate']:.0f}%) | {s['unfinished']} | "
+                 f"{s['unlocatable']}/{s['predicted_mentions']} | "
                  f"{sp['precision']:.3f} | {sp['recall']:.3f} | {sp['f1']:.3f} | {ec['accuracy']:.3f} | "
                  f"{ec['consistent']}/{ec['entities']} | {ec['split']} | {ec['merged']} | {ec['incomplete']} |")
     L.append("")
@@ -180,12 +202,17 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--predictions", required=True)
     ap.add_argument("--corpus", required=True)
     ap.add_argument("--out", required=True, help="output prefix: writes <out>_report.md and <out>.json")
+    ap.add_argument("--contract", default=None, choices=list(CONTRACTS),
+                    help="output contract to parse (default: the instruction_version recorded in the predictions manifest)")
     args = ap.parse_args(argv)
     preds = load_predictions(args.predictions)
     corpus = load_corpus(args.corpus)
-    result = evaluate(preds, corpus)
     manifest_path = Path(args.predictions + ".manifest.json")
     pm = json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.exists() else {}
+    contract = args.contract or pm.get("instruction_version")
+    if contract is None:
+        raise SystemExit("cannot determine the output contract: pass --contract or evaluate predictions that have a manifest")
+    result = evaluate(preds, corpus, contract)
     meta = {
         "adapter_dir": pm.get("adapter_dir"), "adapter_sha256": pm.get("adapter_sha256"),
         "predictions": args.predictions, "corpus": args.corpus,
@@ -199,7 +226,8 @@ def main(argv: list[str] | None = None) -> int:
     Path(str(out) + ".json").write_text(json.dumps({"meta": meta, **result}, indent=2, default=str) + "\n",
                                          encoding="utf-8")
     s = result["slices"]["all"]
-    print(f"[evaluate] all: samples {s['samples']}, malformed {s['malformed']}, span F1 {s['span']['f1']:.3f}, "
+    print(f"[evaluate] contract {contract}; all: samples {s['samples']}, malformed {s['malformed']}, "
+          f"unlocatable {s['unlocatable']}/{s['predicted_mentions']}, span F1 {s['span']['f1']:.3f}, "
           f"entity acc {s['entity_consistency']['accuracy']:.3f}; report at {out}_report.md", file=sys.stderr)
     return 0
 

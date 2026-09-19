@@ -61,7 +61,7 @@ class DataCfg:
     train: str
     val: str
     corpus: str                         # corpus.jsonl, for slices and gold entities at eval time
-    instruction_version: str = "v1"
+    instruction_version: str = "v2"     # output contract; asserted on every training-view line
     system_prompt: str | None = None    # optional system turn; None = user turn only
     limit_train: int | None = None      # smoke runs only
     limit_val: int | None = None
@@ -173,8 +173,8 @@ def validate_config(cfg: RunConfig) -> None:
         raise ConfigError("train.max_length and infer.max_new_tokens must be positive")
     if cfg.train.bf16 and cfg.train.fp16:
         raise ConfigError("train.bf16 and train.fp16 are mutually exclusive")
-    if cfg.data.instruction_version != "v1":
-        raise ConfigError(f"data.instruction_version {cfg.data.instruction_version!r} is not supported by this trainer (v1)")
+    if cfg.data.instruction_version not in ("v1", "v2"):
+        raise ConfigError(f"data.instruction_version {cfg.data.instruction_version!r} is not supported by this trainer (v1, v2)")
 
 
 def file_sha256(path: str | Path) -> str:

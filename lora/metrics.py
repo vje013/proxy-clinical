@@ -12,7 +12,10 @@ import json
 from collections import defaultdict
 from dataclasses import dataclass, field
 
+from synthgen.anchors import nth_occurrence
+
 Span = tuple[int, int, str]   # (start, end, type)
+CONTRACTS = ("v1", "v2")
 
 
 class MalformedPrediction(ValueError):
@@ -49,6 +52,63 @@ def parse_prediction(raw: str, text_len: int | None = None) -> list[dict]:
             raise MalformedPrediction(f"mention {i}: id must be a non-empty string")
         out.append({"start": s, "end": e, "type": m["type"], "id": m["id"]})
     return out
+
+
+def parse_prediction_v2(raw: str) -> list[dict]:
+    """Strict parse of the v2 (text-anchored) contract. Returns a list of
+    {"text","n","type","id"} or raises. No relocation here."""
+    if not isinstance(raw, str):
+        raise MalformedPrediction("prediction is not a string")
+    try:
+        obj = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise MalformedPrediction(f"invalid JSON: {exc.msg} at {exc.pos}") from exc
+    if not isinstance(obj, dict) or set(obj.keys()) != {"mentions"}:
+        raise MalformedPrediction("top level must be an object with exactly one key 'mentions'")
+    ms = obj["mentions"]
+    if not isinstance(ms, list):
+        raise MalformedPrediction("'mentions' must be a list")
+    out: list[dict] = []
+    for i, m in enumerate(ms):
+        if not isinstance(m, dict) or set(m.keys()) != {"text", "n", "type", "id"}:
+            raise MalformedPrediction(f"mention {i}: must have exactly keys text,n,type,id")
+        if not isinstance(m["text"], str) or not m["text"]:
+            raise MalformedPrediction(f"mention {i}: text must be a non-empty string")
+        n = m["n"]
+        if not isinstance(n, int) or isinstance(n, bool) or n < 1:
+            raise MalformedPrediction(f"mention {i}: n must be a positive integer")
+        if not isinstance(m["type"], str) or not m["type"]:
+            raise MalformedPrediction(f"mention {i}: type must be a non-empty string")
+        if not isinstance(m["id"], str) or not m["id"]:
+            raise MalformedPrediction(f"mention {i}: id must be a non-empty string")
+        out.append({"text": m["text"], "n": n, "type": m["type"], "id": m["id"]})
+    return out
+
+
+def relocate_anchored(mentions: list[dict], text: str) -> tuple[list[dict], list[dict]]:
+    """Deterministically turn v2 mentions into offset mentions. A mention whose
+    string does not occur n times in the text is *unlocatable*: it is returned
+    separately and scored as a false positive of its type (and its gold
+    counterpart stays a miss). Nothing is repaired to a nearby occurrence."""
+    located: list[dict] = []
+    unlocatable: list[dict] = []
+    for m in mentions:
+        start = nth_occurrence(text, m["text"], m["n"])
+        if start is None:
+            unlocatable.append(m)
+            continue
+        located.append({"start": start, "end": start + len(m["text"]), "type": m["type"], "id": m["id"]})
+    return located, unlocatable
+
+
+def parse_and_locate(raw: str, text: str, contract: str) -> tuple[list[dict], list[dict]]:
+    """Contract-aware entry point: returns (offset mentions, unlocatable
+    mentions) or raises MalformedPrediction."""
+    if contract == "v1":
+        return parse_prediction(raw, text_len=len(text)), []
+    if contract == "v2":
+        return relocate_anchored(parse_prediction_v2(raw), text)
+    raise ValueError(f"unknown contract {contract!r}")
 
 
 @dataclass

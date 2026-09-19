@@ -19,7 +19,7 @@ data:
   train: data/pilot/train.jsonl
   val: data/pilot/val.jsonl
   corpus: data/pilot/corpus.jsonl
-  instruction_version: v1          # asserted on every line at load; mismatch is a hard error
+  instruction_version: v2          # text-anchored contract; asserted on every line at load, mismatch is a hard error
 
 train:
   output_dir: runs/pilot-qwen2.5-3b   # the notebook overrides this with a Drive path via --output-dir

@@ -134,6 +134,7 @@ def run_inference(cfg: RunConfig, adapter_dir: str, input_path: str, out_path: s
         "adapter_sha256": file_sha256(Path(adapter_dir) / "adapter_model.safetensors"),
         "input": input_path,
         "input_sha256": file_sha256(input_path),
+        "instruction_version": cfg.data.instruction_version,
         "n": len(preds),
         "decoding": {"do_sample": False, "num_beams": 1, "max_new_tokens": cfg.infer.max_new_tokens,
                      "batch_size": batch_size or cfg.infer.batch_size, "merged_adapter": merge,

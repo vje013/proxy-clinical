@@ -122,6 +122,37 @@ def train(cfg: RunConfig, resume: str | None, resume_if_exists: bool, output_dir
     if resume_from:
         print(f"[train] resuming from {resume_from}", file=sys.stderr)
 
+    # Run lock: a checkpoint may only be resumed by a run with the same output
+    # contract, data files and config. Resuming a v1 checkpoint on v2 data
+    # would silently mix formats.
+    # The lock covers what makes checkpoints incompatible; schedule knobs such
+    # as max_steps, epochs and output_dir may legitimately change on resume.
+    lock = {
+        "instruction_version": cfg.data.instruction_version,
+        "train_sha256": file_sha256(cfg.data.train),
+        "val_sha256": file_sha256(cfg.data.val),
+        "model": cfg.model.name_or_path,
+        "revision": cfg.model.revision,
+        "tokenizer": cfg.model.tokenizer_path,
+        "lora": {"r": cfg.lora.r, "alpha": cfg.lora.alpha, "dropout": cfg.lora.dropout,
+                 "target_modules": sorted(cfg.lora.target_modules)},
+        "max_length": cfg.train.max_length,
+        "seed": cfg.train.seed,
+    }
+    lock_path = output_dir / "run_lock.json"
+    if resume_from:
+        if not lock_path.exists():
+            raise SystemExit(f"{output_dir} has checkpoints but no run_lock.json; refusing to resume an untracked run")
+        prior = json.loads(lock_path.read_text(encoding="utf-8"))
+        diffs = {k: (prior.get(k), v) for k, v in lock.items() if prior.get(k) != v}
+        if diffs:
+            raise SystemExit(f"refusing to resume: run in {output_dir} differs in {diffs}. Use a new output dir.")
+    elif lock_path.exists() or latest_checkpoint(output_dir) is not None:
+        prior = json.loads(lock_path.read_text(encoding="utf-8")) if lock_path.exists() else {}
+        if prior != lock:
+            raise SystemExit(f"{output_dir} already holds a different run (run_lock.json differs). Use a new output dir.")
+    lock_path.write_text(json.dumps(lock, indent=2) + "\n", encoding="utf-8")
+
     t0 = time.time()
     tokenizer = load_tokenizer(cfg.model.tokenizer_path, cfg.model.tokenizer_rev, cfg.model.trust_remote_code)
     train_ds, val_ds = load_datasets(cfg.data)

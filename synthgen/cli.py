@@ -14,7 +14,7 @@ from pathlib import Path
 
 from . import GENERATOR_VERSION
 from .cast import parse_master_seed
-from .emit import dumps_record, is_val, read_jsonl, training_pair, write_jsonl
+from .emit import DEFAULT_INSTRUCTION_VERSION, INSTRUCTIONS, dumps_record, is_val, read_jsonl, training_pair, write_jsonl
 from .generate import Composition, Generator, build_plan, corpus_meta
 from .validate import GateResult, distribution_report, run_all_gates
 
@@ -64,13 +64,13 @@ def cmd_generate(args: argparse.Namespace) -> int:
         determinism = "SKIPPED (paraphrase pass is non-deterministic)"
 
     counts = comp.counts(args.n)
-    meta = corpus_meta(args.n, seed_bytes.hex(), comp, counts)
+    meta = corpus_meta(args.n, seed_bytes.hex(), comp, counts, args.instruction_version)
     meta["paraphrase"] = paraphrase_stats
     meta["determinism"] = determinism
 
     n_corpus = write_jsonl(out / "corpus.jsonl", records)
-    train = [training_pair(r) for r in records if not is_val(r)]
-    val = [training_pair(r) for r in records if is_val(r)]
+    train = [training_pair(r, args.instruction_version) for r in records if not is_val(r)]
+    val = [training_pair(r, args.instruction_version) for r in records if is_val(r)]
     write_jsonl(out / "train.jsonl", train)
     write_jsonl(out / "val.jsonl", val)
     meta["split_counts"] = {"train": len(train), "val": len(val)}
@@ -134,6 +134,8 @@ def build_parser() -> argparse.ArgumentParser:
     add_common(g)
     g.add_argument("--out", required=True, help="output directory")
     g.add_argument("--report", default=None, help="report path (default <out>/pilot_report.md)")
+    g.add_argument("--instruction-version", dest="instruction_version", default=DEFAULT_INSTRUCTION_VERSION,
+                   choices=sorted(INSTRUCTIONS), help="training-view output contract (default v2: text anchors)")
     g.add_argument("--paraphrase", action="store_true", help="optional LLM paraphrase pass (network; OFF by default)")
     g.add_argument("--paraphrase-model", default="claude-sonnet-4-5")
     g.add_argument("--no-determinism-check", dest="determinism_check", action="store_false",

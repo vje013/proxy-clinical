@@ -18,7 +18,7 @@ data:
   train: data/pilot/train.jsonl
   val: data/pilot/val.jsonl
   corpus: data/pilot/corpus.jsonl
-  instruction_version: v1
+  instruction_version: v2
 
 train:
   output_dir: runs/pilot-llama-3.2-3b

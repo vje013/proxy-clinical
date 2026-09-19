@@ -76,23 +76,37 @@ def test_split_keeps_bundles_together():
         assert len(sides) == 1, bid
 
 
-def test_training_view_format():
+def test_training_view_format_v2_default():
+    from synthgen.anchors import nth_occurrence
     plan, recs = _small_corpus(20)
     for r in recs:
         pair = training_pair(r)
         assert set(pair) == {"sample_id", "instruction_version", "instruction", "input", "output"}
+        assert pair["instruction_version"] == "v2"
+        ms = json.loads(pair["output"])["mentions"]
+        gold = sorted(r["mentions"], key=lambda m: (m["start"], m["end"]))
+        assert len(ms) == len(gold)
+        for m, g in zip(ms, gold):
+            assert list(m) == ["text", "n", "type", "id"]
+            assert m["text"] == g["text"] and m["type"] == g["type"]
+            assert nth_occurrence(r["text"], m["text"], m["n"]) == g["start"]
+        seen = []
+        for m in ms:
+            if m["id"] not in seen:
+                seen.append(m["id"])
+        assert seen == [f"E{i + 1}" for i in range(len(seen))]
+
+
+def test_training_view_format_v1_explicit():
+    plan, recs = _small_corpus(10)
+    for r in recs:
+        pair = training_pair(r, "v1")
         assert pair["instruction_version"] == "v1"
-        out = json.loads(pair["output"])
-        spans = out["mentions"]
+        spans = json.loads(pair["output"])["mentions"]
         assert spans == sorted(spans, key=lambda s: (s["span"][0], s["span"][1]))
         for s in spans:
             assert list(s) == ["span", "type", "id"]
             assert r["text"][s["span"][0]:s["span"][1]]
-        seen = []
-        for s in spans:
-            if s["id"] not in seen:
-                seen.append(s["id"])
-        assert seen == [f"E{i + 1}" for i in range(len(seen))]
 
 
 def test_renumber_for_training_is_first_appearance():

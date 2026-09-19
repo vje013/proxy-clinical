@@ -24,7 +24,7 @@ def test_pilot_config_loads_with_pinned_revision():
     assert len(cfg.model.revision) == 40
     assert cfg.lora.r == 16 and cfg.lora.alpha == 32
     assert set(cfg.lora.target_modules) == {"q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"}
-    assert cfg.data.instruction_version == "v1"
+    assert cfg.data.instruction_version == "v2"
     assert cfg.train.save_steps == 100
     assert len(cfg.config_hash()) == 64
 
@@ -55,18 +55,18 @@ def test_unknown_key_and_bad_values_rejected(tmp_path):
     with pytest.raises(ConfigError, match="unknown keys"):
         load_config(_write(tmp_path, raw))
     raw = yaml.safe_load(SMOKE.read_text())
-    raw["data"]["instruction_version"] = "v2"
+    raw["data"]["instruction_version"] = "v9"
     with pytest.raises(ConfigError, match="instruction_version"):
         load_config(_write(tmp_path, raw))
 
 
 def test_instruction_version_mismatch_is_hard_error(tmp_path):
     rows = [json.loads(l) for l in open("data/pilot/val.jsonl")][:5]
-    rows[3]["instruction_version"] = "v2"
+    rows[3]["instruction_version"] = "v9"
     p = tmp_path / "val.jsonl"
     p.write_text("".join(json.dumps(r) + "\n" for r in rows))
-    with pytest.raises(DataError, match="instruction_version 'v2' != expected 'v1'"):
-        read_training_view(p, "v1")
+    with pytest.raises(DataError, match="instruction_version 'v9' != expected 'v2'"):
+        read_training_view(p, "v2")
 
 
 def test_instruction_text_drift_is_hard_error(tmp_path):
@@ -75,7 +75,7 @@ def test_instruction_text_drift_is_hard_error(tmp_path):
     p = tmp_path / "val.jsonl"
     p.write_text("".join(json.dumps(r) + "\n" for r in rows))
     with pytest.raises(DataError, match="instruction text differs"):
-        read_training_view(p, "v1")
+        read_training_view(p, "v2")
 
 
 def test_train_val_overlap_is_hard_error(tmp_path):
@@ -85,7 +85,7 @@ def test_train_val_overlap_is_hard_error(tmp_path):
 
 
 def test_prompt_completion_format_matches_trl_conversational():
-    rows = read_training_view("data/pilot/val.jsonl", "v1", limit=2)
+    rows = read_training_view("data/pilot/val.jsonl", "v2", limit=2)
     ex = to_prompt_completion(rows[0], None)
     assert set(ex) == {"sample_id", "prompt", "completion"}
     assert ex["prompt"][-1]["role"] == "user" and ex["completion"][0]["role"] == "assistant"

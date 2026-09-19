@@ -4,9 +4,10 @@ import pytest
 
 from lora.evaluate import evaluate
 from lora.metrics import (
-    MalformedPrediction, entity_consistency, parse_prediction, span_counts,
+    MalformedPrediction, entity_consistency, parse_prediction, parse_prediction_v2, relocate_anchored, span_counts,
 )
-from synthgen.emit import read_jsonl
+from synthgen.anchors import nth_occurrence, occurrence_index
+from synthgen.emit import read_jsonl, training_pair
 
 CORPUS = "data/pilot/corpus.jsonl"
 
@@ -125,7 +126,7 @@ def test_consistency_malformed():
 def test_oracle_predictions_score_perfectly(corpus):
     ids = list(corpus)[:60]
     preds = [{"sample_id": s, "raw_output": gold_to_output(corpus[s]), "finished": True} for s in ids]
-    res = evaluate(preds, corpus)
+    res = evaluate(preds, corpus, contract="v1")
     a = res["slices"]["all"]
     assert a["malformed"] == 0
     assert a["span"]["f1"] == 1.0 and a["span"]["fp"] == 0 and a["span"]["fn"] == 0
@@ -153,7 +154,7 @@ def test_perturbed_oracle_scores_as_expected(corpus):
     preds = [{"sample_id": s, "raw_output": json.dumps({"mentions": perturbed}), "finished": True},
              {"sample_id": s, "raw_output": "not json at all", "finished": False}]
     # Two "predictions" for the same sample: one perturbed, one malformed.
-    res = evaluate(preds, corpus)
+    res = evaluate(preds, corpus, contract="v1")
     all_ = res["slices"]["all"]
     assert all_["samples"] == 2 and all_["malformed"] == 1 and all_["unfinished"] == 1
     n_gold = len(rec["mentions"])
@@ -164,3 +165,72 @@ def test_perturbed_oracle_scores_as_expected(corpus):
     assert ec["entities"] == 2 * n_entities
     assert ec["merged"] == 2                  # both patients merged under one id
     assert ec["incomplete"] == n_entities + 1 # malformed sample + the entity whose date was dropped
+
+
+# ---------------------------------------------------------------- v2 contract: text anchors
+
+def test_occurrence_index_and_nth_occurrence_are_inverse_incl_overlaps():
+    text = "aaa bab aaa"
+    for start in (0, 1, 8, 9):
+        n = occurrence_index(text, "aa", start)
+        assert nth_occurrence(text, "aa", n) == start
+    assert occurrence_index("the patient saw the patient", "the patient", 16) == 2
+    assert nth_occurrence("x", "y", 1) is None and nth_occurrence("x", "x", 2) is None
+    with pytest.raises(ValueError):
+        occurrence_index("abc", "b", 0)
+
+
+@pytest.mark.parametrize("raw", [
+    "", "{}", '{"mentions": [{"text": "a", "type": "PATIENT", "id": "E1"}]}',              # missing n
+    '{"mentions": [{"text": "a", "n": 0, "type": "PATIENT", "id": "E1"}]}',              # n < 1
+    '{"mentions": [{"text": "a", "n": true, "type": "PATIENT", "id": "E1"}]}',           # bool n
+    '{"mentions": [{"text": "a", "n": 1.0, "type": "PATIENT", "id": "E1"}]}',            # float n
+    '{"mentions": [{"text": "", "n": 1, "type": "PATIENT", "id": "E1"}]}',               # empty text
+    '{"mentions": [{"text": "a", "n": 1, "type": "PATIENT", "id": "E1", "span": [0, 1]}]}',  # extra key
+])
+def test_v2_parser_rejects_malformed(raw):
+    with pytest.raises(MalformedPrediction):
+        parse_prediction_v2(raw)
+
+
+def test_v2_relocation_exact_and_unlocatable():
+    text = "Robert Chen was seen. Robert Chen returned. Chen left."
+    ms = parse_prediction_v2(json.dumps({"mentions": [
+        {"text": "Robert Chen", "n": 2, "type": "PATIENT", "id": "E1"},
+        {"text": "Chen", "n": 3, "type": "PATIENT", "id": "E1"},
+        {"text": "Robert Chen", "n": 3, "type": "PATIENT", "id": "E1"},   # only two occurrences
+        {"text": "Nobody", "n": 1, "type": "PATIENT", "id": "E2"},        # not in text
+    ]}))
+    located, unloc = relocate_anchored(ms, text)
+    assert located == [{"start": 22, "end": 33, "type": "PATIENT", "id": "E1"},
+                       {"start": 44, "end": 48, "type": "PATIENT", "id": "E1"}]
+    assert [u["text"] for u in unloc] == ["Robert Chen", "Nobody"]
+
+
+def test_v2_round_trip_is_exact_on_whole_pilot(corpus):
+    """The emitted v2 target relocates back to exactly the gold offsets for
+    every mention of every sample. This is the invariant the contract rests on."""
+    for rec in corpus.values():
+        out = json.loads(training_pair(rec, "v2")["output"])["mentions"]
+        located, unloc = relocate_anchored(out, rec["text"])
+        assert not unloc, rec["sample_id"]
+        gold = sorted(((m["start"], m["end"], m["type"]) for m in rec["mentions"]))
+        assert sorted((m["start"], m["end"], m["type"]) for m in located) == gold, rec["sample_id"]
+
+
+def test_v2_oracle_scores_perfectly_and_unlocatable_is_fp(corpus):
+    ids = list(corpus)[:40]
+    preds = [{"sample_id": s, "raw_output": training_pair(corpus[s], "v2")["output"], "finished": True} for s in ids]
+    res = evaluate(preds, corpus, contract="v2")
+    a = res["slices"]["all"]
+    assert a["malformed"] == 0 and a["unlocatable"] == 0
+    assert a["span"]["f1"] == 1.0 and a["entity_consistency"]["accuracy"] == 1.0
+    # Add one hallucinated anchor: precision drops, recall does not, unlocatable is counted.
+    s0 = ids[0]
+    out = json.loads(training_pair(corpus[s0], "v2")["output"])
+    out["mentions"].append({"text": "Zzyzx Quux", "n": 1, "type": "PATIENT", "id": "E9"})
+    res2 = evaluate([{"sample_id": s0, "raw_output": json.dumps(out), "finished": True}], corpus, contract="v2")
+    a2 = res2["slices"]["all"]
+    assert a2["unlocatable"] == 1 and a2["span"]["fp"] == 1 and a2["span"]["fn"] == 0
+    assert a2["span"]["recall"] == 1.0 and a2["span"]["precision"] < 1.0
+    assert a2["entity_consistency"]["accuracy"] == 1.0

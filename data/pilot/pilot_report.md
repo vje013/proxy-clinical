@@ -1,6 +1,6 @@
 # Proxy Clinical synthetic pilot report
 
-Generator `synthgen 0.1.0`, master seed `cafebabecafebabecafebabecafebabecafebabecafebabecafebabecafebabe`, instruction version `v1`.
+Generator `synthgen 0.1.0`, master seed `cafebabecafebabecafebabecafebabecafebabecafebabecafebabecafebabe`, instruction version `v2`.
 
 ## Gates
 

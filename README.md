@@ -119,14 +119,32 @@ a completion would teach the model to stop early). The user message the model
 sees is built in exactly one place (`lora.data.build_user_message`) for both
 training and inference.
 
+Output contract (v2, text anchors). The model emits
+`{"mentions":[{"text":S,"n":K,"type":T,"id":E},...]}`: the exact mention
+string, which occurrence of that exact string it is (1 = first, counting every
+occurrence including overlapping ones), the type, and the entity id. Offsets are
+recovered deterministically by `synthgen.anchors.nth_occurrence`; the emitted
+target round-trips to the gold offsets exactly on every mention of the pilot
+(tested). The v1 contract (character offsets) is kept for reproducibility of the
+first pilot run, which showed a token-level model generating offsets with the
+right shape and no grounding (span F1 0.03 with the correct type mix and id
+structure). `synthgen generate --instruction-version v1|v2` selects the view;
+the corpus itself is identical either way.
+
 Inference is the production config: `do_sample=False`, `num_beams=1` (this is
 what temperature 0 means, exactly), fixed `max_new_tokens`, and the tokenizer
 copy saved beside the adapter. Batches are formed by a fixed sort so the same
-inputs always form the same batches.
+inputs always form the same batches. A run directory carries a `run_lock.json`
+(contract, data hashes, model, revision, LoRA shape, max_length, seed) and a
+checkpoint can only be resumed by a run that matches it.
 
 Evaluation reports span F1 (exact start, end, type) and entity-consistency
 accuracy per slice: single, multi, listing, bundle, hard_case, all, plus per
-type and per hard-case kind. A gold entity is consistent only when every one
+type and per hard-case kind. Under v2 the predictions are relocated to offsets
+first; a mention whose string or occurrence index is not in the document is
+"unlocatable" and scores as a false positive of its type (its gold counterpart
+stays a miss), and the report shows the unlocatable rate, which is the direct
+measure of occurrence miscounting. A gold entity is consistent only when every one
 of its mention spans was predicted, all under one predicted id, and that id is
 used for no other gold entity. Output parsing is strict: anything that is not
 `{"mentions":[{"span":[s,e],"type":T,"id":E},…]}` with integer offsets inside

@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 
 from . import GENERATOR_VERSION
 from .cast import Cast, CastBuilder, CastSpec, doc_seed, rng_from_seed
-from .emit import INSTRUCTION, INSTRUCTION_VERSION, assign_entity_ids, build_record
+from .emit import DEFAULT_INSTRUCTION_VERSION, INSTRUCTIONS, assign_entity_ids, build_record
 from .hardcases import (
     KIND_ID_ONLY, KIND_INITIALS_FAR, KIND_MISSPELLING, KIND_NAMELIKE, KIND_NICKNAME,
     KIND_PROSE_DATE, KIND_SAME_SURNAME, HardCasePlan, plan as plan_hard, verify_all,
@@ -214,15 +214,16 @@ class Generator:
         return records
 
 
-def corpus_meta(n: int, master_seed_hex: str, composition: Composition, counts: dict[str, int]) -> dict:
+def corpus_meta(n: int, master_seed_hex: str, composition: Composition, counts: dict[str, int],
+                instruction_version: str = DEFAULT_INSTRUCTION_VERSION) -> dict:
     return {
         "generator_version": GENERATOR_VERSION,
         "master_seed": master_seed_hex,
         "n": n,
         "composition": vars(composition),
         "counts": counts,
-        "instruction_version": INSTRUCTION_VERSION,
-        "instruction": INSTRUCTION,
+        "instruction_version": instruction_version,
+        "instruction": INSTRUCTIONS[instruction_version],
         "split": {"rule": "sha256(bundle_id or sample_id) mod 10000 < 1000 -> val", "val_share": 0.10},
         "entity_id_rule": "corpus: first mention order (bundle-wide); training view: first mention order per sample",
     }

@@ -46,7 +46,7 @@ def test_pipeline_end_to_end(tmp_path: Path, tiny_model):
     assert (run / "adapter" / "tokenizer.json").exists()
     manifest = json.loads((run / "run_manifest.json").read_text())
     assert manifest["training"]["global_steps"] == 2
-    assert manifest["data"]["instruction_version"] == "v1"
+    assert manifest["data"]["instruction_version"] == "v2"
     assert len(manifest["data"]["train_sha256"]) == 64
     assert (run / "pip_freeze.txt").stat().st_size > 0
     assert (run / "checkpoint-2").is_dir()
@@ -56,6 +56,16 @@ def test_pipeline_end_to_end(tmp_path: Path, tiny_model):
     manifest2 = json.loads((run / "run_manifest.json").read_text())
     assert manifest2["training"]["resumed_from"].endswith("checkpoint-2")
     assert manifest2["training"]["global_steps"] == 3
+
+    # A checkpoint may not be resumed under a different contract/data/config.
+    lock = json.loads((run / "run_lock.json").read_text())
+    assert lock["instruction_version"] == "v2"
+    tampered = dict(lock); tampered["train_sha256"] = "0" * 64
+    (run / "run_lock.json").write_text(json.dumps(tampered))
+    res = subprocess.run([sys.executable, "-m", "lora.train", "--config", str(cfg_path), "--resume", "--max-steps", "4"],
+                         capture_output=True, text=True)
+    assert res.returncode != 0 and "refusing to resume" in res.stderr
+    (run / "run_lock.json").write_text(json.dumps(lock))
 
     # --resume with no checkpoint must fail; --resume-if-exists must not
     res = subprocess.run([sys.executable, "-m", "lora.train", "--config", str(cfg_path), "--resume",

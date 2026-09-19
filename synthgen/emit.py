@@ -8,12 +8,33 @@ from typing import Iterable
 from .cast import Cast
 from .render import Rendered
 
-INSTRUCTION_VERSION = "v1"
-INSTRUCTION = (
-    "Extract every person, site, location, date, identifier, age and contact mention "
-    "from the clinical text. Return JSON {\"mentions\":[{\"span\":[start,end],\"type\":T,\"id\":E}]} "
-    "with character offsets, sorted by start. Mentions of the same real-world entity share one id."
-)
+# Output contracts for the training view. A new contract gets a new version;
+# the trainer asserts the version on every line, so formats never mix.
+#   v1: character offsets  {"span":[s,e],"type":T,"id":E}   (superseded: a
+#       token-level model cannot compute character positions; see eval of
+#       the v1 pilot run)
+#   v2: text anchors       {"text":S,"n":K,"type":T,"id":E} where S is the
+#       exact mention string and K is its occurrence index in the document
+#       (1 = first occurrence of that exact string). Offsets are recovered
+#       deterministically by synthgen.anchors.nth_occurrence.
+INSTRUCTIONS: dict[str, str] = {
+    "v1": (
+        "Extract every person, site, location, date, identifier, age and contact mention "
+        "from the clinical text. Return JSON {\"mentions\":[{\"span\":[start,end],\"type\":T,\"id\":E}]} "
+        "with character offsets, sorted by start. Mentions of the same real-world entity share one id."
+    ),
+    "v2": (
+        "Extract every person, site, location, date, identifier, age and contact mention "
+        "from the clinical text, in reading order. Return JSON "
+        "{\"mentions\":[{\"text\":S,\"n\":K,\"type\":T,\"id\":E}]} where S is the exact mention string "
+        "as it appears in the text, K is which occurrence of that exact string it is (1 = first), "
+        "T is the type, and mentions of the same real-world entity share one id E."
+    ),
+}
+DEFAULT_INSTRUCTION_VERSION = "v2"
+# Backwards-compatible names (v1 constants used by older code and tests).
+INSTRUCTION_VERSION = DEFAULT_INSTRUCTION_VERSION
+INSTRUCTION = INSTRUCTIONS[DEFAULT_INSTRUCTION_VERSION]
 
 _FORMAT_ORDER = ("PATIENT", "INVESTIGATOR", "SITE", "LOCATION", "DATE", "ID", "AGE", "CONTACT")
 
@@ -115,8 +136,7 @@ def build_record(sample_id: str, cast: Cast, rendered: Rendered, key_to_id: dict
 
 
 def renumber_for_training(mentions: list[dict]) -> list[dict]:
-    """Per-sample ids by first appearance, so a listing from a bundle still
-    starts at E1 when seen on its own."""
+    """v1 target: per-sample ids by first appearance, character offsets."""
     remap: dict[str, str] = {}
     out: list[dict] = []
     for m in sorted(mentions, key=lambda m: (m["start"], m["end"])):
@@ -127,12 +147,38 @@ def renumber_for_training(mentions: list[dict]) -> list[dict]:
     return out
 
 
-def training_pair(record: dict) -> dict:
-    target = {"mentions": renumber_for_training(record["mentions"])}
+def anchored_for_training(text: str, mentions: list[dict]) -> list[dict]:
+    """v2 target: exact mention string + occurrence index, ids by first appearance."""
+    from .anchors import occurrence_index
+    remap: dict[str, str] = {}
+    out: list[dict] = []
+    for m in sorted(mentions, key=lambda m: (m["start"], m["end"])):
+        eid = m["entity_id"]
+        if eid not in remap:
+            remap[eid] = f"E{len(remap) + 1}"
+        out.append({
+            "text": m["text"],
+            "n": occurrence_index(text, m["text"], m["start"]),
+            "type": m["type"],
+            "id": remap[eid],
+        })
+    return out
+
+
+def training_target(record: dict, version: str) -> dict:
+    if version == "v1":
+        return {"mentions": renumber_for_training(record["mentions"])}
+    if version == "v2":
+        return {"mentions": anchored_for_training(record["text"], record["mentions"])}
+    raise ValueError(f"unknown instruction version {version!r}")
+
+
+def training_pair(record: dict, version: str = DEFAULT_INSTRUCTION_VERSION) -> dict:
+    target = training_target(record, version)
     return {
         "sample_id": record["sample_id"],
-        "instruction_version": INSTRUCTION_VERSION,
-        "instruction": INSTRUCTION,
+        "instruction_version": version,
+        "instruction": INSTRUCTIONS[version],
         "input": record["text"],
         "output": json.dumps(target, separators=(",", ":"), ensure_ascii=False),
     }

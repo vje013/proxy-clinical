@@ -69,7 +69,7 @@ def test_cli_generate_and_validate(tmp_path: Path):
     for name in ("corpus.jsonl", "train.jsonl", "val.jsonl", "meta.json", "pilot_report.md"):
         assert (out / name).exists(), name
     meta = json.loads((out / "meta.json").read_text())
-    assert meta["instruction_version"] == "v1"
+    assert meta["instruction_version"] == "v2"
     assert meta["determinism"] == "PASS"
     lines = (out / "corpus.jsonl").read_text().splitlines()
     assert len(lines) == 40
