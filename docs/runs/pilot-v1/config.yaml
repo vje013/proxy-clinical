@@ -1,0 +1,50 @@
+# Pilot run: Qwen2.5-3B-Instruct, LoRA r=16/alpha=32 on attention + MLP.
+# Target: Colab A100 (40 GB, high-RAM runtime). One command:
+#   python -m lora.train --config configs/pilot.yaml --resume-if-exists
+name: pilot-qwen2.5-3b
+
+model:
+  name_or_path: Qwen/Qwen2.5-3B-Instruct
+  revision: aa8e72537993ba99e69dfaafa59ed015b17504d1   # HF commit, resolved 2026-09-18; tokenizer follows it
+  torch_dtype: bfloat16
+  attn_implementation: sdpa
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+
+data:
+  train: data/pilot/train.jsonl
+  val: data/pilot/val.jsonl
+  corpus: data/pilot/corpus.jsonl
+  instruction_version: v1          # asserted on every line at load; mismatch is a hard error
+
+train:
+  output_dir: runs/pilot-qwen2.5-3b   # the notebook overrides this with a Drive path via --output-dir
+  seed: 1234
+  learning_rate: 2.0e-4
+  num_train_epochs: 3
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
+  gradient_accumulation_steps: 8    # effective batch 16
+  max_length: 6144                  # worst pilot listing is ~5.5k tokens; over-budget samples are a hard error
+  lr_scheduler_type: cosine
+  warmup_steps: 10
+  weight_decay: 0.0
+  logging_steps: 5
+  eval_strategy: steps
+  save_strategy: steps
+  save_steps: 100
+  eval_steps: 20                    # eval loss on val every 20 steps (pilot is ~84 steps)
+  save_total_limit: 3
+  gradient_checkpointing: true
+  bf16: true                        # T4 fallback: bf16: false, fp16: true
+  fp16: false
+
+infer:
+  max_new_tokens: 4096              # worst pilot listing target is ~4k tokens
+  batch_size: 8
+  dtype: bfloat16
+  deterministic_algorithms: true

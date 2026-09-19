@@ -1,0 +1,33 @@
+{
+  "pass": true,
+  "n": 32,
+  "differing_samples": [],
+  "digest_run1": "38b21b41d81851a285dfc1eef4e793d4339ab5335786f6ab29db06d4a83e6fa3",
+  "digest_run2": "38b21b41d81851a285dfc1eef4e793d4339ab5335786f6ab29db06d4a83e6fa3",
+  "reloaded_between_runs": false,
+  "scope": "same checkpoint, same inputs, same process environment; not a cross-hardware claim",
+  "adapter": "/content/runs/pilot-qwen2.5-3b-20260918/adapter",
+  "decoding": {
+    "do_sample": false,
+    "num_beams": 1,
+    "max_new_tokens": 4096,
+    "batch_size": 8
+  },
+  "environment": {
+    "timestamp_utc": "2026-09-18T23:53:30+00:00",
+    "python": "3.13.15",
+    "platform": "Linux-6.6.122+-x86_64-with-glibc2.39",
+    "torch": "2.14.0+cu130",
+    "cuda_available": true,
+    "cuda_version": "13.0",
+    "gpu": "NVIDIA A100-SXM4-80GB",
+    "gpu_count": 1,
+    "transformers": "5.17.0",
+    "peft": "0.21.0",
+    "trl": "1.13.0",
+    "datasets": "5.0.1",
+    "accelerate": "1.15.0",
+    "tokenizers": "0.23.2",
+    "nvidia_smi": "NVIDIA A100-SXM4-80GB, 580.82.07, 81920 MiB"
+  }
+}
