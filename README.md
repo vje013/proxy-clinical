@@ -100,9 +100,6 @@ Nowhere. The model is small enough to run entirely inside a drug company's own f
 
 ---
 
-Pin it between "How it works" and "What we verified and what we didn't"; the FAQ answers the skeptic's questions right after the diagram raises them, and the honesty section then reads as depth rather than defense. I added the last two questions because they're the next two every judge asks, and the answers were already in the README's body; if you want strictly the reverse-engineering material, cut them and the first three stand alone.
-
-
 ## Repo map
 
 ```
