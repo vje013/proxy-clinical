@@ -33,13 +33,13 @@ Proxy Clinical replaces black bars with realistic fakes. The same patient stays 
 
 ```mermaid
 flowchart LR
-    DOC[Clinical document] --> M[Trained tagger<br/>finds and links identities]
-    M --> R[Relocation<br/>text anchors to exact positions]
-    R --> S[Surrogate engine<br/>consistent fakes, intervals preserved]
-    S --> RC[Receipts<br/>Ed25519 signature per shard]
-    RC --> U[Utility check<br/>AE timeline must reconstruct]
-    U --> OUT[Signed output]
-    M -.->|can't trust it| REF[Refused, with reason]
+    DOC[Clinical document] --> M[Our trained AI<br/>finds every patient detail<br/>and knows who is who]
+    M --> R[Double-check<br/>pins each detail to its<br/>exact spot in the text]
+    R --> S[Swap<br/>replaces real details with<br/>realistic fakes, timelines intact]
+    S --> RC[Receipt<br/>signs a proof of<br/>every change made]
+    RC --> U[Science check<br/>the medical timeline must<br/>still work on the output]
+    U --> OUT[Cleared document<br/>with signed receipt]
+    M -.->|anything uncertain| REF[Refused, with the reason stated]
     R -.-> REF
     U -.-> REF
 ```
