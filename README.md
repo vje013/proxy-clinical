@@ -1,6 +1,6 @@
 # Proxy Clinical
 
-**We trained an AI to remove patients from clinical trial documents without removing the science that could help others. Every document it clears comes with a signed receipt proving the work. Anything it can't prove safe, it refuses to sign.**
+**We trained an AI to remove patients from clinical trial documents without removing the science that could help others. Every document our AI model clears comes with a signed receipt proving the work. Anything it can't prove safe, it refuses to sign.**
 
 Model: [huggingface.co/vlad0717/proxy-clinical-deid-v3](https://huggingface.co/vlad0717/proxy-clinical-deid-v3) · Demo: [link] · Built at TechTown Detroit 2026
 
@@ -15,11 +15,11 @@ Model: [huggingface.co/vlad0717/proxy-clinical-deid-v3](https://huggingface.co/v
 \*Did the model find each identifying detail, exactly, at its exact position (span F1).
 \*\*Did it link every mention of one patient ("Robert Chen", "R. Chen", "the patient") to a single identity, without confusing two people (entity consistency).
 
-Measured on 457 held-out synthetic documents. The v1 to v2 jump came from a diagnosis, not more training: language models can't count characters, so we changed what we asked the model to output. Both failed runs are committed in this repo next to the passing ones.
+Measured on 457 synthetic documents constructed from real clinical trial documents. The v1 to v2 jump came from a diagnosis, not more training: language models can't count characters, so we changed what we asked the model to output. Both failed runs are committed in this repo next to the passing ones.
 
 ## Why this matters in Detroit
 
-Detroiters die of heart disease and kidney disease at twice the national rate, and of diabetes at 1.6 times it (age-adjusted, Detroit Health Department 2022-2024 vs. NCHS 2023). Which drugs work, and which harm, for people carrying those conditions is learned from clinical trial data. Today's redaction deletes exactly the fields that answer it: age, region, and comorbidity get suppressed as "quasi-identifiers," so the subgroup signal for the populations with the heaviest burden is the first thing destroyed. Our pipeline keeps those fields intact with identity removed.
+Detroiters die of heart disease and kidney disease at twice the national rate, and of diabetes at 1.6 times it (age-adjusted, Detroit Health Department 2022-2024 vs. NCHS 2023). Which drugs work, and which harm, for people carrying those conditions is learned from clinical trial data. Today's redaction of that clinical trial data deletes exactly the fields we need to know which clinical drugs are harmful for who: age, region, and comorbidity get suppressed as "quasi-identifiers," so the subgroup signal for the populations with the heaviest burden is the first thing destroyed. Our pipeline keeps those fields intact with personal identity removed.
 
 For the real-document test we needed a genuine clinical study report, and Health Canada is the only regulator that publishes them fully in the open: no registration, no gatekeeping, free for anyone to download. So we used a Health Canada release for finerenone, a drug for chronic kidney disease and heart complications in type 2 diabetes: public trial evidence for exactly the conditions where Detroit's burden is highest.
 
