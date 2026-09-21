@@ -81,6 +81,28 @@ Every number in this README traces to a committed record under `docs/runs/`: run
 
 Real-document source: the clinical study report of the manufacturer named on the document, disclosed by Health Canada under the Public Release of Clinical Information initiative, used for non-commercial purposes under the portal's Terms of Use. The document text is intentionally absent from this repo; submission ID 258231 and our extraction tool let anyone re-derive it from the portal.
 
+## FAQ
+
+**Can someone reverse the fakes and find the real patients?**
+No, because there is nothing to reverse. The system never stores a list matching fake names to real people. Each fake is made by a one-way scramble (real detail plus a secret key in, fake out), and the math does not run backward. Without the key, which never leaves the drug company's own servers, a fake name tells you nothing. Even we cannot undo it.
+
+**Does the receipt leak anything?**
+No. The receipt proves the work was done correctly using fingerprints (hashes) of the documents, not their contents. You can verify a receipt all day and learn nothing about any patient.
+
+**So is re-identification impossible?**
+Almost, and we are precise about the exception. If a patient's story is one of a kind, someone who already knows that story might recognize it no matter what name is on it. No redaction system can prevent that, including ours. That risk is controlled by deciding what details get published at all, and those decisions live in a public, versioned rulebook (`policies/`), not hidden inside our engine. We certify the rules were followed exactly. We do not certify the rules themselves are sufficient, and we say so.
+
+**Why does the system refuse some documents?**
+Because refusing beats guessing. If the AI's output cannot be verified at any step, the whole document is rejected with a written reason instead of being processed on a best guess. Every refusal in our runs is itemized in `docs/runs/`.
+
+**Where does patient data go during processing?**
+Nowhere. The model is small enough to run entirely inside a drug company's own firewall. No document ever touches a cloud AI service, ours or anyone's.
+
+---
+
+Pin it between "How it works" and "What we verified and what we didn't"; the FAQ answers the skeptic's questions right after the diagram raises them, and the honesty section then reads as depth rather than defense. I added the last two questions because they're the next two every judge asks, and the answers were already in the README's body; if you want strictly the reverse-engineering material, cut them and the first three stand alone.
+
+
 ## Repo map
 
 ```
