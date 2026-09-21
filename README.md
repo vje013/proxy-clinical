@@ -2,7 +2,7 @@
 
 **We trained an AI to remove patients from clinical trial documents without removing the science that could help others. Every document our AI model clears comes with a signed receipt proving the work. Anything it can't prove safe, it refuses to sign.**
 
-Model: [huggingface.co/vlad0717/proxy-clinical-deid-v3](https://huggingface.co/vlad0717/proxy-clinical-deid-v3) · Demo: [link] · Built at TechTown Detroit 2026
+Model: [huggingface.co/vlad0717/proxy-clinical-deid-v3](https://huggingface.co/vlad0717/proxy-clinical-deid-v3) · Demo: [https://www.youtube.com/watch?v=jH_woxmGg6w] · Built at TechTown Detroit 2026
 
 ## Results
 
